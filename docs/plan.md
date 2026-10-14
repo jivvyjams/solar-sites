@@ -11,38 +11,41 @@
 ## 0. Definition of done
 
 **Must (hand-in blockers)**
+
 - [ ] `docker build -t solar .` then `docker run -p 8000:8000 solar` serves the app on http://localhost:8000 from a clean clone.
 - [ ] All eleven contract routes exist with the exact paths, camelCase field names, and the status codes in §3.2.
 - [ ] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
 - [ ] Sites CRUD is scoped to the caller. Another user's site id returns 404.
 - [ ] POST/PUT /api/sites return a message per invalid field.
-- [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. PVGIS down gives 502, timeout 504.
+- [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
 - [ ] Battery endpoint runs an hourly simulation with the consumption model documented in the README.
 - [ ] Backend tests cover auth flow, ownership isolation, validation, CSRF, energy maths. `pytest` is green.
 - [ ] README (replacing the Next.js boilerplate): how to run (Docker and dev), stack choices and why, session/CSRF design, consumption model and why, PVGIS handling, known limits, honest AI-usage statement.
 
 **Should**
+
 - [ ] Monthly bar chart on the site page; battery comparison with "the battery adds X kWh".
-- [ ] In-memory cache for PVGIS responses.
+- [ ] `@lru_cache` on the two PVGIS fetch functions.
 - [ ] Session expiry (7 days) enforced.
-- [ ] GitHub Actions: pytest, `npm run build`, `docker build` on every push.
+- [ ] GitHub Actions: one job running `docker build` on every push (optional, phase 6).
 
 **Won't (say so in the README)**
+
 - Deployment, frontend unit tests, visual polish beyond clean and consistent, rate limiting, email verification, password reset, multi-worker deployment.
 
 ## 1. Timeline at a glance
 
-| Phase | Target                 | Outcome                                                                     | Branch            |
-| ----- | ---------------------- | --------------------------------------------------------------------------- | ----------------- |
-| 0     | Wed 14 Oct, evening    | Clean repo, both toolchains run, working agreement committed                | `main` (direct)   |
-| 1     | Thu 15 Oct, morning    | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; CI builds the image | `chore/skeleton`  |
-| 1b    | Thu 15 Oct, evening    | Design system tokens and base components, two-hour timebox                  | `feat/design-system` |
-| 2     | Thu 15 PM → Fri 16 AM  | register/login/logout/me with CSRF; login/register pages; route guard       | `feat/auth`       |
-| 3     | Fri 16 Oct             | Five site routes with ownership and validation; list/form/detail pages      | `feat/sites`      |
-| 4     | Sat 17 Oct, morning    | PVGIS PVcalc → production endpoint + monthly chart                          | `feat/production` |
-| 5     | Sat 17 PM → Sun 18 AM  | seriescalc + energy simulation → battery endpoint + calculator UI           | `feat/battery`    |
-| 6     | Sun 18 Oct             | Tests complete, security pass, README, clean-clone Docker test              | `chore/hardening` |
-| 7     | Mon 19 Oct, before 12:00 | Final review, quiz, tag `v1.0.0`, submit the link                         | `main`            |
+| Phase | Target                   | Outcome                                                                                | Branch               |
+| ----- | ------------------------ | -------------------------------------------------------------------------------------- | -------------------- |
+| 0     | Wed 14 Oct, evening      | Clean repo, both toolchains run, working agreement committed                           | `main` (direct)      |
+| 1     | Thu 15 Oct, morning      | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; CI builds the image | `chore/skeleton`     |
+| 1b    | Thu 15 Oct, evening      | Design tokens plus `Button` and `Field`, one-hour timebox                              | `feat/design-system` |
+| 2     | Thu 15 PM → Fri 16 AM    | register/login/logout/me with CSRF; login/register pages; route guard                  | `feat/auth`          |
+| 3     | Fri 16 Oct               | Five site routes with ownership and validation; list/form/detail pages                 | `feat/sites`         |
+| 4     | Sat 17 Oct, morning      | PVGIS PVcalc → production endpoint + monthly chart                                     | `feat/production`    |
+| 5     | Sat 17 PM → Sun 18 AM    | seriescalc + energy simulation → battery endpoint + calculator UI                      | `feat/battery`       |
+| 6     | Sun 18 Oct               | Tests complete, security pass, README, clean-clone Docker test                         | `chore/hardening`    |
+| 7     | Mon 19 Oct, before 12:00 | Final review, quiz, tag `v1.0.0`, submit the link                                      | `main`               |
 
 Monday morning is the only slack. If a phase slips by more than half a day, apply the cut list in §5.
 Targets assume eight to ten focused hours per day with breaks (confirmed 14 Oct).
@@ -50,6 +53,7 @@ Targets assume eight to ten focused hours per day with breaks (confirmed 14 Oct)
 ## 2. Phases
 
 Every phase runs the same loop:
+
 1. Ask Claude `brief phase N`. You get: concepts to learn, API shapes in words, files to create, acceptance checks, tests to write. Read the linked docs.
 2. Backend first (exercise it in `/docs`), then frontend, then end to end in the browser.
 3. Ask `review`. Fix findings you understand. Tests green. Commit. Open the PR. Merge. Tick the boxes in §7.
@@ -62,17 +66,19 @@ Every phase runs the same loop:
 **State today.** `frontend/` is already a Vite + React 19 + React Router 7 + Tailwind 4 scaffold. The git index still holds the old Next.js files (staged but deleted on disk). The root `.gitignore` and `README.md` are Next.js leftovers. `backend/` is empty. Node 26.11.1 and npm 12 are installed (Node upgraded 14 Oct). Docker 29 is installed. Python is 3.14.8. The brief lives at `docs/projet-brief.md`; the superseded plan and prompt files are deleted.
 
 **Steps**
+
 1. Repo cleanup: follow "Day 0 cleanup" in [git-workflow.md](git-workflow.md) (unstage everything, remove leftovers, write a new root `.gitignore`, placeholder README).
 2. System: confirm `npm --version` prints without a warning now that Node is 26. Confirm `docker run --rm hello-world` works without `sudo`.
 3. Frontend: `npm run dev` shows the Vite page. Delete the demo assets, `App.css`, and the demo markup in `App.tsx`. Add the `/api` dev proxy to `vite.config.ts` (`server.proxy`, target `http://localhost:8000`). Confirm `@import "tailwindcss";` is in `index.css`. `npm run build` passes.
-4. Backend: `python -m venv backend/.venv`, activate, `pip install fastapi "uvicorn[standard]" sqlmodel httpx argon2-cffi "pydantic[email]"`, then `pip freeze > requirements.txt` (before anything else is installed, so only runtime packages are captured; check with `grep -iE "pytest|ruff|pluggy|iniconfig|pygments" requirements.txt`, which must print nothing), then `pip install pytest ruff`. Write `requirements-dev.txt` by hand: first line `-r requirements.txt`, then `pytest==x` and `ruff==y` with the versions from `pip list`. Create `backend/app/__init__.py` and `backend/app/main.py` with one `FastAPI()` instance. `uvicorn app.main:app --reload` starts from `backend/`.
+4. Backend: `python -m venv backend/.venv`, activate, `pip install fastapi "uvicorn[standard]" httpx argon2-cffi "pydantic[email]"`, then `pip freeze > requirements.txt` (before anything else is installed, so only runtime packages are captured; check with `grep -iE "pytest|ruff|pluggy|iniconfig|pygments" requirements.txt`, which must print nothing), then `pip install pytest ruff`. Write `requirements-dev.txt` by hand: first line `-r requirements.txt`, then `pytest==x` and `ruff==y` with the versions from `pip list`. Create `backend/app/__init__.py` and `backend/app/main.py` with one `FastAPI()` instance. `uvicorn app.main:app --reload` starts from `backend/`.
 5. Primer: read [python-for-js-devs.md](python-for-js-devs.md) sections 1 to 8 (about an hour).
 6. Commit on `main`: `chore: reset repo to Vite frontend and FastAPI backend skeleton`. Push. Create the GitHub repo.
 
 **Acceptance**
-- [ ] `git ls-files` shows no Next.js files, no `node_modules`, no `.venv`.
-- [ ] `npm run dev` and `uvicorn app.main:app --reload` both start.
-- [ ] `npm --version` prints without a warning.
+
+- [x] `git ls-files` shows no Next.js files, no `node_modules`, no `.venv`.
+- [x] `npm run dev` and `uvicorn app.main:app --reload` both start.
+- [x] `npm --version` prints without a warning.
 
 **Learn first:** venv and pip; `python -m`; how uvicorn resolves `app.main:app`; Vite dev proxy.
 **Interview angles:** why pip + venv; why Vite instead of Next.js (the SPA is served by Python, no React server needed).
@@ -82,23 +88,27 @@ Every phase runs the same loop:
 **Goal.** FastAPI serves the built React app and a JSON health endpoint from one port, locally and in Docker. This proves the hand-in path before any feature exists.
 
 **Backend**
+
 1. `GET /api/health` returning `{"status": "ok"}`, in its own router, to learn `APIRouter` and `include_router`.
 2. Static serving: mount the built `static/assets` directory; add a catch-all GET route (`{path:path}`) that returns `static/index.html` for any path not under `/api`, so client-side routes survive a refresh. Unknown `/api/...` paths must still return a JSON 404, not `index.html`.
 3. Skip the mount when `static/` does not exist, so the backend runs in dev without a frontend build.
 
 **Frontend**
+
 1. `vite.config.ts` proxy for `/api`.
 2. `App.tsx` temporarily fetches `/api/health` and renders the result.
 3. `src/api/client.ts` version 0: a `request<T>(path, init)` wrapper that sets JSON headers, parses the body, and throws a typed `ApiError` on non-2xx.
 
 **Docker**
+
 1. `.dockerignore` listing `node_modules`, `.venv`, `dist`, `*.db`, `.git`, `__pycache__`, `docs`.
 2. Multi-stage `Dockerfile` in the repo root. Stage one: `node:24-alpine`, copy `package.json` and `package-lock.json` first, `npm ci`, copy the rest, `npm run build`. Stage two: `python:3.14-slim` (fall back to `3.13-slim` if any wheel is missing), copy `requirements.txt` first, `pip install --no-cache-dir -r`, copy `backend/app`, copy `dist` from stage one into `static`, create a `data/` dir, create a non-root user and switch to it, `EXPOSE 8000`, `CMD` uvicorn on `0.0.0.0:8000`.
 3. `docker build -t solar . && docker run --rm -p 8000:8000 solar`.
 
-**CI (decided).** `.github/workflows/ci.yml` with one job that runs `docker build -t solar .` on every push and pull request, about 15 lines. Catches a broken hand-in path on every merge. Phase 6 adds the pytest and npm build jobs. After this PR is merged, enable branch protection on `main` (see git-workflow.md §5).
+**Branch protection.** After this PR is merged, enable branch protection on `main` (see git-workflow.md §5). CI is optional and belongs to phase 6.
 
 **Acceptance**
+
 - [ ] Dev: Vite page at :5173 shows the health JSON via the proxy.
 - [ ] Docker: page at :8000; `/api/health` is JSON; `/sites` (a client route that does not exist yet) serves `index.html`; `/api/nope` is a JSON 404.
 - [ ] The container runs as non-root (`docker run --rm solar id`).
@@ -106,37 +116,39 @@ Every phase runs the same loop:
 **Learn first:** ASGI versus WSGI; `APIRouter`; `StaticFiles` and `FileResponse`; path converter `{path:path}`; Docker layers, multi-stage builds, `COPY --from`, `.dockerignore`; `npm ci` versus `npm install`.
 **Interview angles:** why one process serves both; cache-friendly Dockerfile ordering (lockfiles before source); non-root containers.
 
-### Phase 1b: Design foundations (Thu 15 Oct, evening; timebox two hours)
+### Phase 1b: Design tokens (Thu 15 Oct, evening; timebox one hour)
 
-**Goal.** The token set and base components every later page is built from, so phases 2 to 5 compose instead of style. Spec in §3.8.
+**Goal.** Your own tokens and the two components every form and page reuse, so later pages compose inline utilities on a consistent base. Spec in §3.8.
 
 **Steps**
-1. `src/index.css`: the `@theme` block with colour roles, type scale, radii, shadows and focus ring. Remove every leftover Vite style.
-2. `src/components/`: `Button`, `Field`, `Card`, `PageHeader`, `ErrorBanner`, `EmptyState`, `Spinner`, and the `NavBar` shell. Typed props, no data fetching inside.
-3. A throwaway `/kitchen-sink` route that renders every component in every state, to eyeball consistency. Delete it in phase 6 or keep it behind the auth guard.
-4. A number-formatting helper in `src/lib/format.ts` (`Intl.NumberFormat`, kWh with one decimal and thousand separators).
+
+1. `src/index.css`: the `@theme` block with your colour roles, one font, radii and a focus ring. Remove every leftover Vite style.
+2. `src/components/`: `Button` and `Field` (label, input, error slot). Typed props, no data fetching inside. Other components only when a page needs them.
 
 **Acceptance**
-- [ ] Every component renders all its states on the kitchen-sink page; focus rings visible with keyboard navigation.
-- [ ] No hex values or arbitrary classes outside `index.css`.
-- [ ] `npm run build` and `npm run lint` pass. The two-hour timer was respected.
 
-**Learn first:** Tailwind 4 `@theme` and CSS-first configuration; `focus-visible`; `Intl.NumberFormat`.
-**Interview angles:** why tokens as CSS variables; how the system kept later pages small; why it was timeboxed.
+- [ ] Both components render their states (hover, focus-visible, disabled, invalid) on a scratch page; focus rings visible with keyboard navigation.
+- [ ] No hex values outside `index.css`.
+- [ ] `npm run build` and `npm run lint` pass. The one-hour timer was respected.
+
+**Learn first:** Tailwind 4 `@theme` and CSS-first configuration; `focus-visible`.
+**Interview angles:** why tokens as CSS variables; why one hour was enough.
 
 ### Phase 2: Authentication (Thu 15 PM → Fri 16 AM)
 
 **Goal.** Accounts and sessions exactly per contract, safe by construction.
 
 **Backend**
-1. `db.py`: engine for `sqlite:///data/solar.db` (path from `DATABASE_URL` env with that default), `connect_args={"check_same_thread": False}`, `create_db_and_tables()` called from a lifespan hook, `get_db()` dependency that yields a session.
-2. `models.py`: `User` and `Session` per §3.1. Emails stored stripped and lowercased.
+
+1. `db.py`: a `DB_PATH` constant (`solar.db` next to the `app` package; no environment variable, decision 36). `connect()` opens `sqlite3.connect(DB_PATH, check_same_thread=False)`, sets `row_factory = sqlite3.Row`, and runs `PRAGMA foreign_keys = ON` because SQLite enforces foreign keys only when asked, per connection. `init_db()` runs the `CREATE TABLE IF NOT EXISTS` statements for `users`, `sessions` and `sites` and is called once at the bottom of `main.py` at import time (no lifespan hook). `get_db()` is a dependency that yields one connection per request and closes it in a `finally`.
+2. Tables: the `CREATE TABLE` SQL for `users` and `sessions` per §3.1 lives in `db.py`; there is no `models.py`. `sessions` is keyed by `token` and carries `csrf_token`, `user_id` and `created_at` (ISO 8601 UTC text, used for the 7-day expiry). `users` and `sites` have no timestamps. Emails stored stripped and lowercased, with a `UNIQUE` constraint.
 3. `schemas.py`: `Credentials` (`email: EmailStr`, `password` 8 to 128 chars) and `MeOut` (`email`, `csrfToken`).
 4. `auth.py`: `hash_password`, `verify_password` (argon2), `create_session(db, user)` returning the token and CSRF token, `current_user` dependency (cookie → session row → expiry check → user, else 401), `require_csrf` dependency (`X-CSRF-Token` header compared with `hmac.compare_digest` against the session row, else 403).
-5. `routers/auth.py`: register (duplicate email → 409 via a pre-check or by catching `IntegrityError`; success 201, sets the cookie, returns `{email, csrfToken}`), login (wrong credentials → 401 with one shared message; success 200, new session row, cookie), logout (needs session and CSRF; deletes the row; clears the cookie; 204), me (200 `{email, csrfToken}`).
+5. `routers/auth.py`: register (duplicate email → 409 via a pre-check or by catching `sqlite3.IntegrityError`; success 201, sets the cookie, returns `{email, csrfToken}`), login (wrong credentials → 401 with one shared message; success 200, new session row, cookie), logout (needs session and CSRF; deletes the row; clears the cookie; 204), me (200 `{email, csrfToken}`).
 6. Cookie: name `session`, `HttpOnly`, `SameSite=Lax`, `Path=/`, `Max-Age` 7 days, no `Secure` flag because the app is served over plain http on localhost (document this).
 
 **Frontend**
+
 1. `src/api/auth.ts`: `register`, `login`, `logout`, `me`.
 2. `AuthContext` and `useAuth()`: `{ status: 'loading' | 'anon' | 'authed', email, csrfToken, login(), register(), logout() }`. On mount, call `/api/me` to restore the session after a refresh.
 3. `client.ts`: attach `X-CSRF-Token` on non-GET requests when a token is known.
@@ -144,14 +156,16 @@ Every phase runs the same loop:
 5. Nav bar with the email and a logout button.
 
 **Tests (backend)**
+
 - register → 201 and a `Set-Cookie`; duplicate → 409; login wrong password → 401; `/api/me` without cookie → 401; logout → 204 and `/api/me` is 401 afterwards; POST to a protected route without the header → 403.
 
 **Acceptance**
+
 - [ ] Full flow in the browser. Refresh keeps you logged in. After logout the back button cannot reach protected data.
 - [ ] DevTools shows the cookie with HttpOnly and SameSite=Lax.
 - [ ] `pytest` green.
 
-**Learn first:** password hashing (Argon2id, salt, verify); server-side sessions versus JWT; cookie attributes; what CSRF is and why SameSite=Lax alone is not the whole answer; FastAPI `Depends`, `Response.set_cookie`, `Request.cookies`, lifespan; SQLModel session basics, `select().where()`, unique constraints and `IntegrityError`; React context with a provider; React Router 7 layout routes, `Navigate`, `Outlet`.
+**Learn first:** password hashing (Argon2id, salt, verify); server-side sessions versus JWT; cookie attributes; what CSRF is and why SameSite=Lax alone is not the whole answer; FastAPI `Depends`, `Response.set_cookie`, `Request.cookies`; the stdlib `sqlite3` module (connections, cursors, `?` placeholders, `commit`, `row_factory`), `SELECT ... WHERE`, unique constraints and `sqlite3.IntegrityError`; React context with a provider; React Router 7 layout routes, `Navigate`, `Outlet`.
 **Interview angles:** 401 versus 403; one error message for unknown email and wrong password; why the CSRF token is returned in JSON rather than a readable cookie; why HttpOnly; why not localStorage; a fresh token on every login (session fixation).
 
 ### Phase 3: Sites CRUD with ownership (Fri 16 Oct)
@@ -159,12 +173,14 @@ Every phase runs the same loop:
 **Goal.** The five site routes, every query scoped to the caller, per-field validation.
 
 **Backend**
-1. `models.py`: `Site` per §3.1 with a UUID primary key (`uuid.UUID` field, `default_factory=uuid4`) and a `user_id` foreign key with an index.
+
+1. `db.py`: add the `sites` table per §3.1: `id` text primary key (a UUID generated in Python with `uuid4()` and stored as a string) and a `user_id` foreign key with an index.
 2. `schemas.py`: `SiteIn` with camelCase aliases and constraints (`clientName` non-empty, max 200; `address` non-empty, max 500; `latitude` −90 to 90; `longitude` −180 to 180; `roofAreaM2` optional and greater than 0; `peakKwp` greater than 0 and at most 1000). `SiteOut` is `SiteIn` plus `id`.
-3. Validation handler: an `@app.exception_handler(RequestValidationError)` that returns 422 with `{"detail": "Validation failed", "errors": {"latitude": "..."}}`, keys taken from the last element of each error's `loc` (already camelCase because of the alias).
+3. Validation errors: keep FastAPI's default 422 body (§3.3); no custom handler (decision 10). The frontend maps each error's last `loc` element to the field.
 4. `routers/sites.py`: list (filter by `user_id`), create (`user_id` taken from the dependency, never from the body; 201), get / put / delete through one helper `get_owned_site(site_id, user, db)` that filters on both id and `user_id` and raises 404.
 
 **Frontend**
+
 1. `src/api/types.ts`: `Site` (`id: string`), `SiteInput`, `ApiError` with an optional `fieldErrors` map.
 2. `src/api/sites.ts`: five functions.
 3. Pages: `/sites` (list with empty, loading and error states), `/sites/new` and `/sites/:id/edit` (one `SiteForm` with controlled inputs, number parsing, client-side mirror of the server rules, server field errors shown under the matching field), `/sites/:id` (fields, delete with confirm, links to edit; production and battery sections come in phases 4 and 5).
@@ -173,11 +189,12 @@ Every phase runs the same loop:
 **Tests:** user B gets 404 on user A's site for get, put and delete; list shows only own sites; invalid body → 422 with the expected keys; `roofAreaM2` may be omitted.
 
 **Acceptance**
+
 - [ ] Two users in two private windows cannot see each other's sites by URL or id.
 - [ ] A bad latitude shows a message under that field.
 - [ ] `pytest` green.
 
-**Learn first:** the `uuid` module and `default_factory`; ORM create / read / update / delete with `add`, `commit`, `refresh`, `delete`; foreign keys; why ownership is a `WHERE` clause and not a check after fetching; PUT semantics (full replacement); mass assignment; Pydantic aliases and `Field` constraints; custom exception handlers; React controlled forms with number inputs, `useParams`, `useNavigate`.
+**Learn first:** the `uuid` module; SQL `INSERT`, `SELECT`, `UPDATE` and `DELETE` with `?` placeholders, `commit` and `rollback`, `cursor.rowcount`; foreign keys; why ownership is a `WHERE` clause and not a check after fetching; PUT semantics (full replacement); mass assignment; Pydantic aliases and `Field` constraints; custom exception handlers; React controlled forms with number inputs, `useParams`, `useNavigate`.
 **Interview angles:** 404 versus 403 for someone else's site; UUIDs are not authorisation on their own, so ownership stays a WHERE clause; where validation lives (both sides, server authoritative).
 
 ### Phase 4: Production via PVGIS (Sat 17 Oct, morning)
@@ -185,48 +202,54 @@ Every phase runs the same loop:
 **Goal.** `GET /api/sites/{id}/production` returns `{yearlyKwh, monthlyKwh: [{month, kwh}] × 12}` with clear failures.
 
 **Backend**
-1. `pvgis.py`: a `PvgisError(kind, message)` with `kind` in `no_data`, `upstream`, `timeout`. `async fetch_pvcalc(lat, lon, kwp)` calls PVcalc with `loss=14`, `optimalangles=1`, `outputformat=json`, timeout 30 s. HTTP 400 with the "sea" message → `no_data`; any other non-2xx or connection error → `upstream`; `httpx.TimeoutException` → `timeout`.
-2. Mapping: `outputs.totals.fixed.E_y` → `yearlyKwh`; each of `outputs.monthly.fixed[*]` → `{month, kwh: E_m}`; round to one decimal.
-3. Cache: a module-level dict keyed by `(round(lat, 4), round(lon, 4), kwp)`. Editing a site changes the key, so no invalidation code is needed. Optional TTL.
-4. `routers/energy.py`: owned site → cached fetch → map; `PvgisError` → 422 / 502 / 504 with a `detail` message.
+
+1. `pvgis.py`: `fetch_pvcalc(lat, lon, kwp)` is a plain function that calls PVcalc with `httpx.get(url, params=..., timeout=30)` and `loss=14`, `optimalangles=1`, `outputformat=json`. On HTTP 400 whose JSON message mentions the sea or missing data, raise `HTTPException(422, "PVGIS has no data for this location")`. On any other failure (non-2xx, connection error, timeout) raise `HTTPException(502, "PVGIS is unavailable")`. No custom exception class, no async (decisions 34 and 35).
+2. Decorate it with `@functools.lru_cache(maxsize=128)`. The arguments are floats, so the result is cached per (lat, lon, kwp); a raised exception is never cached; editing a site changes the arguments, so no invalidation code is needed. Never mutate the returned data.
+3. Mapping, in the route or a tiny helper: `outputs.totals.fixed.E_y` → `yearlyKwh`; each of `outputs.monthly.fixed[*]` → `{month, kwh: E_m}`; round to one decimal.
+4. `routers/sites.py`: the production route reuses `get_owned_site`, calls the fetch, returns the mapped shape.
 
 **Frontend**
+
 1. `src/api/sites.ts`: `getProduction(id)`.
 2. Site page section: yearly figure, a 12-bar chart made of divs with heights proportional to `kwh / max`, month labels, loading state, and the 422 message shown prominently.
 
-**Tests:** monkeypatch `fetch_pvcalc` to return a saved fixture JSON → the mapped shape; raising `PvgisError('no_data')` → 422; `'upstream'` → 502; `'timeout'` → 504.
+**Tests:** monkeypatch `fetch_pvcalc` to return a saved fixture JSON → the mapped shape; monkeypatch it to raise the 422 → the response is 422.
 
 **Acceptance**
+
 - [ ] The Hague site (52.08, 4.31, 5 kWp) shows about 5341 kWh/year and 12 months.
 - [ ] A site at 55.0, 3.0 (North Sea) shows a clear message, not a 500.
 - [ ] A second load is instant (cache hit).
 
-**Learn first:** `async def` and `await` in FastAPI; httpx `AsyncClient` lifecycle; timeouts; mapping upstream errors to your own status codes; module-level caches and their limits; `monkeypatch` in pytest.
-**Interview angles:** why the backend proxies PVGIS; 502 versus 504 versus 422; cache staleness; what happens with concurrent requests for the same key.
+**Learn first:** `httpx.get` with `params` and `timeout`; `response.status_code` and `response.json()`; `httpx.HTTPError`; raising `HTTPException` from a helper; `@lru_cache`; `monkeypatch` in pytest.
+**Interview angles:** why the backend proxies PVGIS; 502 versus 422; why a plain `def` route is fine for a slow call (thread pool); what `lru_cache` does and does not cache.
 
 ### Phase 5: Battery and self-consumption (Sat 17 PM → Sun 18 AM)
 
 **Goal.** `GET /api/sites/{id}/battery?capacityKwh=&annualUseKwh=` returns the §3.5 shape using the documented consumption model.
 
 **Backend**
-1. `pvgis.py`: `async fetch_hourly(lat, lon, kwp)` calls seriescalc with `pvcalculation=1`, `loss=14`, `optimalangles=1`, `startyear=2023`, `endyear=2023`, `outputformat=json`; returns 8760 `(hour_of_day, kwh)` pairs (`P` in W ÷ 1000; hour from `time[9:11]`). Cache like PVcalc; this call takes 5 to 10 s.
-2. `energy.py` (pure, no I/O, no FastAPI imports): `hourly_consumption(annual_kwh) -> list[float]` built from a fixed 24-value profile; `simulate(production, consumption, capacity_kwh, round_trip_efficiency=0.9) -> dict` that walks the year hour by hour and returns the totals. Run it twice (capacity 0 and capacity N).
+
+1. `pvgis.py`: `fetch_hourly(lat, lon, kwp)`, same shape as `fetch_pvcalc`, calls seriescalc with `pvcalculation=1`, `loss=14`, `optimalangles=1`, `startyear=2023`, `endyear=2023`, `outputformat=json` and returns 8760 kWh values in order (`P` in W ÷ 1000). Same `@lru_cache`; this call takes 5 to 10 s, so the cache matters here.
+2. `energy.py` (pure, no I/O, no FastAPI imports): `simulate(production, annual_use_kwh, capacity_kwh, round_trip_efficiency=0.9) -> dict`. Consumption in every hour is `annual_use_kwh / 8760` (flat profile, §3.5). Walk the year hour by hour and return the totals. Run it twice (capacity 0 and capacity N).
 3. Query validation: `capacityKwh` ≥ 0 and `annualUseKwh` > 0, both required, declared as typed query parameters with `Query(ge=..., gt=...)` and camelCase aliases.
-4. Router: owned site → cached hourly data → simulate → nested response model.
+4. `routers/sites.py`: owned site → cached hourly data → simulate → response model.
 
 **Frontend**
+
 1. `src/api/sites.ts`: `getBattery(id, capacityKwh, annualUseKwh)`.
-2. Site page section: a small form (capacity kWh, annual use kWh, sensible defaults such as 5 and 3500), results side by side for without and with battery (self-used, imported, exported, self-sufficiency %), and a headline "The battery adds X kWh of self-used solar per year".
+2. Site page section: a small form (capacity kWh, annual use kWh, sensible defaults such as 5 and 3500), results side by side for without and with battery (self-used, imported, exported), and a headline "The battery adds X kWh of self-used solar per year".
 
 **Tests:** a hand-made 24-hour series with round numbers whose answers you can compute on paper; capacity 0 equals the without-battery result; energy balance holds (production = self-used + export; consumption = self-used + import).
 
 **Acceptance**
+
 - [ ] Results move sensibly with capacity (0 equals without; very large plateaus).
 - [ ] Balance assertions pass.
 - [ ] README section on the model written.
 
 **Learn first:** time-series simulation and state of charge; floating point rounding; keeping pure functions apart from I/O; FastAPI `Query` validation; nested Pydantic response models.
-**Interview angles:** why this profile; what the model ignores (seasonality, weekends, time zone, battery power limits, degradation); where the efficiency loss is applied and why.
+**Interview angles:** why a flat profile and what it ignores (daily shape, seasons, time zone, battery power limits, degradation); where the efficiency loss is applied and why.
 
 ### Phase 6: Hardening, tests, README (Sun 18 Oct)
 
@@ -249,38 +272,38 @@ Every phase runs the same loop:
 
 ### 3.1 Data model
 
-| Table      | Columns                                                                                                                                   |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null; `created_at` datetime                       |
-| `sessions` | `id` UUID PK; `token` text unique not null (indexed); `csrf_token` text not null; `user_id` FK users.id; `created_at`; `expires_at`        |
+| Table      | Columns                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null; `created_at` datetime                                                                        |
+| `sessions` | `id` UUID PK; `token` text unique not null (indexed); `csrf_token` text not null; `user_id` FK users.id; `created_at`; `expires_at`                                                         |
 | `sites`    | `id` UUID PK; `user_id` FK users.id (indexed); `client_name` text; `address` text; `latitude` real; `longitude` real; `roof_area_m2` real null; `peak_kwp` real; `created_at`; `updated_at` |
 
 Python attribute names are snake_case; JSON field names are camelCase through Pydantic aliases. Never expose `password_hash`, `token`, `csrf_token` of other sessions, or `user_id`.
 
-Ids (decision 12): `uuid.UUID` fields with `default_factory=uuid4`. SQLAlchemy stores them in SQLite as 32-character hex text; Pydantic serialises them as the usual 36-character string in JSON; a path parameter typed `uuid.UUID` is parsed by FastAPI for free and a malformed id gets 422 before any lookup.
+Ids (decision 12): generated in Python with `uuid4()` and stored in SQLite as `TEXT` in the usual 36-character form, the same string that appears in the JSON; a path parameter typed `uuid.UUID` is parsed by FastAPI for free and a malformed id gets 422 before any lookup. Datetimes are stored as UTC ISO 8601 text, which also sorts correctly as a string.
 
 ### 3.2 HTTP status codes (decision 9 in CLAUDE.md)
 
-| Route                            | Success                        | Failures                                                                                  |
-| -------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------- |
-| `POST /api/register`             | 201 `{email, csrfToken}` + cookie | 409 email exists; 422 invalid email or password                                        |
-| `POST /api/login`                | 200 `{email, csrfToken}` + cookie | 401 wrong credentials (one message for both cases); 422 malformed body                  |
-| `POST /api/logout`               | 204, cookie cleared            | 401 no session; 403 missing or wrong CSRF header                                           |
-| `GET /api/me`                    | 200 `{email, csrfToken}`       | 401                                                                                       |
-| `GET /api/sites`                 | 200 `[site]`                   | 401                                                                                       |
-| `POST /api/sites`                | 201 site                       | 401; 403 CSRF; 422 per-field                                                              |
-| `GET /api/sites/{id}`            | 200 site                       | 401; 404 not found or not the caller's                                                    |
-| `PUT /api/sites/{id}`            | 200 site                       | 401; 403 CSRF; 404; 422 per-field                                                         |
-| `DELETE /api/sites/{id}`         | 204                            | 401; 403 CSRF; 404                                                                        |
-| `GET /api/sites/{id}/production` | 200 `{yearlyKwh, monthlyKwh}`  | 401; 404; 422 PVGIS has no data for the location; 502 PVGIS error; 504 PVGIS timeout      |
-| `GET /api/sites/{id}/battery`    | 200 (§3.5)                     | 401; 404; 422 bad query or no data; 502; 504                                              |
+| Route                            | Success                           | Failures                                                                             |
+| -------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------ |
+| `POST /api/register`             | 201 `{email, csrfToken}` + cookie | 409 email exists; 422 invalid email or password                                      |
+| `POST /api/login`                | 200 `{email, csrfToken}` + cookie | 401 wrong credentials (one message for both cases); 422 malformed body               |
+| `POST /api/logout`               | 204, cookie cleared               | 401 no session; 403 missing or wrong CSRF header                                     |
+| `GET /api/me`                    | 200 `{email, csrfToken}`          | 401                                                                                  |
+| `GET /api/sites`                 | 200 `[site]`                      | 401                                                                                  |
+| `POST /api/sites`                | 201 site                          | 401; 403 CSRF; 422 per-field                                                         |
+| `GET /api/sites/{id}`            | 200 site                          | 401; 404 not found or not the caller's                                               |
+| `PUT /api/sites/{id}`            | 200 site                          | 401; 403 CSRF; 404; 422 per-field                                                    |
+| `DELETE /api/sites/{id}`         | 204                               | 401; 403 CSRF; 404                                                                   |
+| `GET /api/sites/{id}/production` | 200 `{yearlyKwh, monthlyKwh}`     | 401; 404; 422 PVGIS has no data for the location; 502 any other PVGIS failure, timeouts included |
+| `GET /api/sites/{id}/battery`    | 200 (§3.5)                        | 401; 404; 422 bad query or no data; 502                                              |
 
 Why 404 and not 403 for another user's site: the response must not reveal that the id exists. Why 422 for a path id that is not a well-formed UUID: it is a malformed request, not a missing resource, and FastAPI produces it automatically. Why 422 for validation: FastAPI's default and semantically "well-formed but unprocessable". Why 403 for CSRF: the session is valid but the request is not authorised in this form.
 
 ### 3.3 Error body
 
 - Single message: `{"detail": "Email already registered"}` (FastAPI's `HTTPException` default, zero extra code).
-- Validation: `{"detail": "Validation failed", "errors": {"latitude": "Input should be less than or equal to 90", "peakKwp": "Field required"}}`. Keys are camelCase, matching the request fields, so the frontend maps them straight onto inputs.
+- Validation: FastAPI's default 422 body, unchanged (decision 10): `{"detail": [{"type": "...", "loc": ["body", "latitude"], "msg": "Input should be less than or equal to 90", ...}, ...]}`. One entry per invalid field, which is the brief's "message per field". The frontend takes the last element of `loc` as the field name (already camelCase because of the alias) and shows `msg` under that input. `detail` is a string for other errors and a list here, so the fetch wrapper checks which it got.
 
 ### 3.4 PVGIS facts (verified with curl on 14 Oct 2026)
 
@@ -300,16 +323,16 @@ Response (contract fields first, the "…" filled in by us):
   "productionKwh": 5341.0,
   "consumptionKwh": 3500.0,
   "capacityKwh": 5.0,
-  "withoutBattery": { "selfUsedKwh", "gridImportKwh", "gridExportKwh", "selfConsumptionPct", "selfSufficiencyPct" },
-  "withBattery":    { "selfUsedKwh", "gridImportKwh", "gridExportKwh", "selfConsumptionPct", "selfSufficiencyPct", "batteryDischargedKwh" },
+  "withoutBattery": { "selfUsedKwh", "gridImportKwh", "gridExportKwh" },
+  "withBattery":    { "selfUsedKwh", "gridImportKwh", "gridExportKwh" },
   "batteryGainKwh": 812.4
 }
 ```
 
-- `selfConsumptionPct` = self-used ÷ production. `selfSufficiencyPct` = self-used ÷ consumption. `batteryGainKwh` = with − without self-used.
-- Consumption model: `annualUseKwh` spread over the year with a fixed 24-value profile that is the same every day: low overnight, a morning bump (07 to 09), a midday trough, an evening peak (17 to 22). Hour use = `annualUseKwh / 365 × weight[hour]`, weights sum to 1. Rationale for the README: PVGIS gives no load data; a two-peak curve is the textbook household shape and avoids the overstatement of self-consumption a flat profile would give, because solar peaks at midday when a household uses least.
+- `batteryGainKwh` = with − without self-used. Percentages, if the UI wants them, are one division in the frontend.
+- Consumption model (decision 14): flat. `annualUseKwh / 8760` in every hour of the year. Rationale for the README: PVGIS gives no load data; the brief allows a simple stated assumption; a flat profile is transparent and has no parameters to defend; the battery effect is still visible because night-time use must be imported from the grid without storage. State what it ignores: the daily shape of household use (morning and evening peaks), seasons, weekends, and the UTC timestamps of PVGIS.
 - Battery simulation per hour: `surplus = production − consumption`. If positive, charge `min(surplus, capacity − soc)` and export the rest. If negative, discharge `min(deficit, soc)` and import the rest. Round-trip efficiency 90 % applied on discharge (energy out = stored × 0.9), start empty, no charge or discharge power limit, no degradation.
-- Stated limitations: same profile every day (no seasons, weekends), PVGIS timestamps are UTC (one or two hours before Dutch local time), 2023 weather only, no battery power limit.
+- Stated limitations: flat profile, 2023 weather only, PVGIS timestamps are UTC, no battery power limit.
 
 ### 3.6 Frontend architecture
 
@@ -333,54 +356,51 @@ Design: the system in §3.8. Every async view has loading, error and empty state
 
 Two stages. Stage one builds the frontend with Node 24 and produces `dist/`. Stage two is Python 3.14 slim: install `requirements.txt`, copy `backend/app`, copy `dist` into `static/`, create `data/`, run as a non-root user, expose 8000, start uvicorn on `0.0.0.0`. The SQLite file lives in `data/` inside the container; mounting a volume there persists it (mention in README).
 
-### 3.8 Design system (decided 14 Oct: design is the candidate's differentiator; light mode only)
+### 3.8 Design tokens (decided 14 Oct, shortened under KISS; light mode only)
 
 **Mechanism.** Tailwind 4 is CSS-first. Tokens are CSS variables declared in an `@theme { ... }` block in `src/index.css`, and every token automatically becomes a utility class: `--color-brand-600` gives `bg-brand-600` and `text-brand-600`, `--radius-card` gives `rounded-card`, `--font-sans` sets the sans stack. There is no `tailwind.config.js`. Docs: https://tailwindcss.com/docs/theme
 
-**Scope, in this order** (two hours on Thursday evening, then stop):
-1. Colour: one neutral scale for text, borders and surfaces; one brand/accent scale; semantic aliases for success, warning, danger, info; a solar accent for the chart. Define roles, not only swatches: `--color-surface`, `--color-surface-raised`, `--color-border`, `--color-text`, `--color-text-muted`, `--color-accent`, `--color-accent-hover`, `--color-danger`.
-2. Type: one sans family (system stack or a single Google font), a five-step size scale, two weights, line heights for body and headings.
-3. Spacing and shape: Tailwind's spacing scale as is; radii (`--radius-control`, `--radius-card`), one or two shadows, one focus ring.
-4. States: hover, focus-visible, disabled, invalid, loading, for every interactive component.
-5. Base components on the tokens: `Button` (primary, secondary, danger; sizes; loading), `Field` (label, input, help, error), `Card`, `PageHeader`, `ErrorBanner`, `EmptyState`, `Spinner`, `NavBar`. Pages compose these; no one-off styling in pages.
-6. Data display: number formatting, the `MonthlyChart` bars in the accent colour, the battery comparison as two cards with the gain as a headline figure.
+**Scope** (one hour on Thursday evening, then stop):
 
-**Rules.** Tokens only in `index.css`; components reference tokens through utility classes; no arbitrary values (`[#hex]`, `[13px]`) in pages; no dark mode; WCAG AA contrast for text; everything keyboard-reachable with a visible focus ring.
+1. Colour roles, not swatches: `--color-surface`, `--color-border`, `--color-text`, `--color-text-muted`, `--color-accent`, `--color-accent-hover`, `--color-danger`. The accent doubles as the chart colour.
+2. One sans family, two radii (`--radius-control`, `--radius-card`), one focus ring.
+3. `Button` (primary, secondary, danger; loading) and `Field` (label, input, error). Everything else is inline utility classes on the page, using the tokens; extract a component only when the same markup appears a third time.
 
-**Interview angle.** The reviewers do not grade design, so be ready to say the system cost two hours and made the pages faster to build, and point at a page that is only composition.
+**Rules.** Tokens only in `index.css`; no arbitrary values (`[#hex]`, `[13px]`) in pages; no dark mode; WCAG AA contrast for text; everything keyboard-reachable with a visible focus ring.
+
+**Interview angle.** The reviewers do not grade design, so be ready to say the tokens cost an hour and kept every page consistent without a component library.
 
 ## 4. Concept map (what to learn, and when)
 
-| Phase | New concepts (ask `concept <name>`)                                                                                                                  |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | venv, pip, requirements files, `python -m`, Vite proxy                                                                                                |
-| 1     | ASGI, FastAPI app and routers, static files and SPA fallback, path converters, multi-stage Docker, `.dockerignore`, non-root containers               |
-| 2     | password hashing, server-side sessions, cookie attributes, CSRF and SameSite, dependency injection, lifespan, SQLModel sessions and selects, unique constraints, React context, Router 7 layout routes |
-| 3     | ORM CRUD and transactions, foreign keys, ownership-scoped queries, Pydantic aliases and constraints, exception handlers, PUT semantics, controlled forms |
-| 4     | async HTTP with httpx, timeouts, upstream error mapping, module-level cache, monkeypatching in tests                                                  |
-| 5     | time-series simulation, pure functions, floating point rounding, `Query` validation, nested response models                                           |
-| 6     | TestClient and dependency overrides, fixtures, security checklist, README structure, clean-clone verification                                        |
+| Phase | New concepts (ask `concept <name>`)                                                                                                                                                                    |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | venv, pip, requirements files, `python -m`, Vite proxy                                                                                                                                                 |
+| 1     | ASGI, FastAPI app and routers, static files and SPA fallback, path converters, multi-stage Docker, `.dockerignore`, non-root containers                                                                |
+| 2     | password hashing, server-side sessions, cookie attributes, CSRF and SameSite, dependency injection, `sqlite3` connections and parameterised queries, unique constraints, React context, Router 7 layout routes |
+| 3     | SQL CRUD and transactions, foreign keys, ownership-scoped queries, Pydantic aliases and constraints, exception handlers, PUT semantics, controlled forms                                               |
+| 4     | `httpx.get` with a timeout, raising `HTTPException` from a helper, `@lru_cache`, monkeypatching in tests                                                                                               |
+| 5     | time-series simulation, pure functions, floating point rounding, `Query` validation, nested response models                                                                                            |
+| 6     | TestClient and dependency overrides, fixtures, security checklist, README structure, clean-clone verification                                                                                          |
 
 ## 5. Risks and cut list
 
-| Risk                                      | Mitigation                                                                                               |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| PVGIS slow or down while developing       | Cache; save one real PVcalc and one seriescalc JSON under `backend/tests/fixtures/` on day one            |
-| Design system grows beyond its timebox    | Two hours Thursday evening, two hours Sunday; tokens and base components only; polish is on the cut list |
-| Python 3.14 wheel missing for a package   | Use `python:3.13-slim` in Docker and a 3.13 venv locally (`pacman -S python313` or pyenv)                |
-| Backend learning curve eats Thursday      | Phase 1 stays tiny; phase 2 backend before any frontend; ask `brief` before coding                       |
-| Running out of time                       | Cut list, from the bottom up                                                                             |
+| Risk                                    | Mitigation                                                                                               |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| PVGIS slow or down while developing     | Cache; save one real PVcalc and one seriescalc JSON under `backend/tests/fixtures/` on day one           |
+| Design system grows beyond its timebox  | One hour Thursday evening, two hours Sunday; tokens plus `Button` and `Field` only; polish is on the cut list |
+| Python 3.14 wheel missing for a package | Use `python:3.13-slim` in Docker and a 3.13 venv locally (`pacman -S python313` or pyenv)                |
+| Backend learning curve eats Thursday    | Phase 1 stays tiny; phase 2 backend before any frontend; ask `brief` before coding                       |
+| Running out of time                     | Cut list, from the bottom up                                                                             |
 
 Cut list (cut from the bottom first; everything above the line stays):
-1. CI jobs for pytest and npm build (the docker build job stays)
-2. Security headers middleware
-3. Design polish pass (tokens and base components stay)
-4. Chart becomes a table
-5. PVGIS cache (call PVGIS every time; still fine)
-6. Two-peak profile becomes flat (keep the README honest about it)
-7. Session expiry (document "sessions do not expire" instead)
 
-Never cut: Docker path, auth with hashing and CSRF, ownership isolation, per-field validation, production, battery, tests for auth and ownership, README.
+1. CI (optional already)
+2. Security headers middleware
+3. Design polish pass (tokens, `Button` and `Field` stay)
+4. Chart becomes a table
+5. `@lru_cache` on the PVGIS calls (call PVGIS every time; slower but correct)
+
+Never cut: Docker path, auth with hashing, CSRF and session expiry, ownership isolation, per-field validation, production, battery, the minimal tests, README.
 
 ## 6. End-to-end manual test script (run on the Docker image)
 
