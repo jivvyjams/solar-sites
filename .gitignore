@@ -1,0 +1,38 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# frontend
+node_modules/
+*.tsbuildinfo
+
+# database and runtime data
+*.db
+*.sqlite*
+backend/data/
+
+# build output
+backend/static/
+frontend/dist/
+
+# secrets and environment
+!.env.example
+.env*
+*.pem
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+.DS_Store
