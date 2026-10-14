@@ -55,7 +55,7 @@ sites: dict[str, int] = {}           # TS: Record<string, number>
 pair: tuple[int, float] = (1, 2.5)   # fixed-length, immutable
 ```
 
-- Hints are documentation plus tooling, like TS; Python itself ignores them at runtime. In this project they do real work: FastAPI and Pydantic read them to validate requests, SQLModel reads them to build tables. Treat them as mandatory.
+- Hints are documentation plus tooling, like TS; Python itself ignores them at runtime. In this project they do real work: FastAPI and Pydantic read them to validate requests. Treat them as mandatory.
 - Primitives: `int`, `float`, `str`, `bool`, `None`. Containers: `list[...]`, `dict[K, V]`, `tuple[...]`, `set[...]`.
 - `X | None` is "optional". There is no `?` suffix on names.
 - `...` (Ellipsis) is a placeholder body, like `// TODO`.
@@ -151,16 +151,16 @@ b.charge(2.0)
 - `self` is the first parameter of every method; Python passes it, you never do. Forgetting it is the most common beginner error.
 - Names with double underscores on both sides (`__init__`, `__str__`) are hooks the language calls ("dunder" methods).
 - Inheritance: `class A(B):` is `class A extends B`. `super().__init__(...)` calls the parent constructor.
-- Declarative classes (Pydantic, SQLModel) put fields in the class body as annotations, not in `__init__`:
+- Declarative classes (Pydantic) put fields in the class body as annotations, not in `__init__`:
 
 ```python
-class Note(SQLModel, table=True):                         # "extends SQLModel", with a class option
-    id: int | None = Field(default=None, primary_key=True)
-    title: str
+class Note(BaseModel):                                    # "extends BaseModel"
+    id: int
+    title: str = Field(min_length=1)
     body: str = ""
 ```
 
-  Read it as a TS interface with defaults; the library generates the constructor, validation and, for tables, the SQL columns from the annotations. `Note(title="x")` constructs with keyword arguments.
+  Read it as a TS interface with defaults; the library generates the constructor and the validation from the annotations. `Note(id=1, title="x")` constructs with keyword arguments and raises a validation error if a field is wrong.
 
 ## 8. Errors
 
@@ -204,14 +204,19 @@ with open("data.json") as f:          # context manager: setup, body, guaranteed
     text = f.read()
 
 def get_db():
-    with Session(engine) as db:       # open a database session
+    db = sqlite3.connect("books.db")  # open a database connection
+    try:
         yield db                      # hand it out; execution resumes here afterwards for cleanup
+    finally:
+        db.close()                    # runs even if the request failed
 ```
 
 - `with` is `try { ... } finally { resource.close() }` where the resource owns the open and close logic. `async with` is the same for async resources.
 - `yield` turns a function into a generator (a lazy iterator), like `function*`. FastAPI uses a single-`yield` function as "set up, give the value to the route, clean up after the response". You never call `next()` yourself.
 
 ## 11. async
+
+Not used in this project (decision 34): every route is a plain `def`. Read this section only so that FastAPI docs showing `async def` make sense.
 
 ```python
 async def fetch_pvcalc(lat: float, lon: float, kwp: float) -> dict:
@@ -239,6 +244,7 @@ async def fetch_pvcalc(lat: float, lon: float, kwp: float) -> dict:
 - `print()` is `console.log`. Use f-strings: `print(f"{soc=}")` prints `soc=2.0`.
 - Circular imports: `main.py` imports the routers, the routers import `db.py`; `db.py` must never import `main.py`.
 - Every file is a module, so a file named `json.py` or `test.py` shadows a library. Never name a file after something you import.
+- `with sqlite3.connect(...) as db:` commits or rolls back the transaction but does not close the connection. Close it yourself, as in the `get_db` example.
 
 ## 14. Quick reference
 
@@ -279,5 +285,5 @@ async def fetch_pvcalc(lat: float, lon: float, kwp: float) -> dict:
 ## 15. Reading order in the official tutorial
 
 Chapters 3 (informal introduction), 4 (control flow), 5 (data structures), 6 (modules), 8 (errors and
-exceptions), 9 (classes). Skip the rest for now; FastAPI, SQLModel and httpx have their own tutorials linked
+exceptions), 9 (classes). Skip the rest for now; FastAPI, `sqlite3` and httpx have their own docs linked
 in [backend-stack.md](backend-stack.md).

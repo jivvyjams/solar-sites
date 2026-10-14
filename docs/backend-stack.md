@@ -12,7 +12,7 @@ browser ──HTTP──▶ uvicorn (server process)
                     └─▶ FastAPI app (routing, dependency injection)
                           ├─▶ Pydantic (validates body / query / cookies from type hints)
                           ├─▶ your path function
-                          │     ├─▶ SQLModel / SQLAlchemy ──▶ SQLite file   (users, sessions, sites)
+                          │     ├─▶ sqlite3 (stdlib) ──▶ SQLite file        (users, sessions, sites)
                           │     ├─▶ argon2-cffi                            (password hashing)
                           │     └─▶ httpx ──HTTP──▶ PVGIS                  (solar data)
                           └─▶ StaticFiles / FileResponse ──▶ built React app (static/)
@@ -24,7 +24,7 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
 | `node` (runtime that runs the server)  | `uvicorn` (ASGI server that runs the app)    |
 | Express / Next.js route handlers       | FastAPI path operations                      |
 | zod                                    | Pydantic (bundled with FastAPI)              |
-| Prisma (schema + typed client)         | SQLModel (SQLAlchemy + Pydantic in one class)|
+| `better-sqlite3` (SQL, no ORM)         | `sqlite3` (stdlib, SQL with `?` placeholders)|
 | `fetch` / axios                        | httpx                                        |
 | `bcrypt` npm package                   | argon2-cffi                                  |
 | Vitest / Jest + supertest              | pytest + TestClient                          |
@@ -71,14 +71,15 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
     `def create_site(body: SiteIn, user: User = Depends(current_user))` is validated, typed and
     documented from the hints alone.
   - Interactive docs at `/docs` let you exercise every endpoint before the frontend exists.
-  - Async-native: waiting several seconds on PVGIS does not block other requests.
+  - Plain `def` routes run in a thread pool, so a slow PVGIS call does not block other requests. No
+    `async` is used in this project (decision 34).
   - Small surface: less to learn than Django, more structure than Flask.
-- **Rejected:** Flask (no built-in validation, typing or async; you would add three libraries to
+- **Rejected:** Flask (no built-in validation or typing; you would add two libraries to
   match), Django + DRF (ships its own ORM, auth and URL conventions that fight a fixed API contract;
   too much to learn in five days).
 - **Used here:** `app/main.py` creates the app, registers routers, mounts the static frontend;
   `app/routers/*.py` hold the endpoints; `Depends` injects `get_db`, `current_user`, `require_csrf`;
-  a custom exception handler turns validation errors into per-field messages.
+  validation errors use FastAPI's default 422 body (decision 10).
 - **Interview angles:** what ASGI is; `def` vs `async def` path functions (a plain `def` runs in a
   thread pool, an `async def` runs on the event loop, so never call blocking I/O inside `async def`);
   what `Depends` does and why it beats middleware for auth; why 422 for validation.
@@ -104,44 +105,55 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
   snake_case while JSON is camelCase, as the contract demands. `Field(ge=-90, le=90)` for latitude
   and similar constraints. `EmailStr` for the email field (needs the `email` extra, below).
 - **Interview angles:** validation runs before your function body; the difference between a Pydantic
-  schema (validation, wire shape) and a SQLModel table (persistence); why you never accept the table
-  model as the request body (mass assignment: a client could set `id` or `user_id`).
+  schema (validation, wire shape) and a database row (persistence); why the request model lists only
+  the fields a client may set (mass assignment: a client could otherwise set `id` or `user_id`).
 - Docs: https://docs.pydantic.dev/latest/
 
-### sqlmodel
-- **What:** the ORM. One class is both a Pydantic model and a SQLAlchemy table. Written by the
-  FastAPI author; SQLAlchemy 2.x underneath.
-- **Why:** the least code to explain for a three-table app, and nothing is hidden when you need
-  `select(...).where(...)`, sessions, relationships or `create_all`, because those are plain SQLAlchemy.
-- **Rejected:** stdlib `sqlite3` with hand-written SQL (works, but you hand-roll parameter binding and
-  row mapping, which is more surface for injection mistakes), plain SQLAlchemy (same engine, more
-  boilerplate: separate declarative classes and Pydantic schemas), Django ORM (needs Django).
-- **Used here:** `app/models.py` defines `User`, `Session`, `Site` with `table=True`; `app/db.py`
-  creates the engine and the `get_db` dependency that yields a session per request; routers run
-  queries such as `select(Site).where(Site.user_id == user.id)`.
-- **Interview angles:** what an ORM does and the SQL it emits (`echo=True` prints it); why every site
-  query filters on `user_id` in SQL instead of checking after the fetch; the SQLite
-  `check_same_thread=False` flag and why FastAPI's thread pool needs it; no migration tool because
-  the schema is created at startup and the database is ephemeral (state this trade-off in the README).
-- Docs: https://sqlmodel.tiangolo.com/
+### sqlite3 (standard library, nothing to install)
+- **What:** Python's built-in driver for SQLite. You write SQL as strings, pass the values separately,
+  and read rows back. `better-sqlite3` for Python.
+- **Why raw SQL instead of an ORM (decision 31):** three tables and about a dozen queries do not need a
+  mapping layer. Every query is visible, nothing is generated behind your back, there is one dependency
+  fewer to defend, and the SQL is exactly what an interviewer can read. The ownership rule is a
+  `WHERE user_id = ?` you can point at.
+- **Rejected:** SQLModel and SQLAlchemy. They give typed objects and a generated schema, at the price of
+  engines, sessions and generated SQL to learn and explain.
+- **Costs you accept:** more boilerplate; rows are not objects until you map them (use `sqlite3.Row`
+  and build the Pydantic response models by hand); and one string-formatted query would be an injection
+  hole, so the rule is absolute: values go through `?` placeholders, never f-strings.
+- **Used here:** `app/db.py` opens one connection per request with
+  `sqlite3.connect(path, check_same_thread=False)`, sets `row_factory = sqlite3.Row`, runs
+  `PRAGMA foreign_keys = ON`, creates the three tables with `CREATE TABLE IF NOT EXISTS` at startup, and
+  exposes `get_db()` as a dependency that yields the connection and closes it in a `finally`. Queries
+  are plain functions such as `SELECT ... FROM sites WHERE id = ? AND user_id = ?`.
+- **Interview angles:** what a parameterised query is and how it stops injection; why every site query
+  filters on `user_id` in SQL and not after the fetch; why `check_same_thread=False` is needed (a
+  dependency creates the connection and the route uses it, and FastAPI may run those on different pool
+  threads, never at the same time); why foreign keys need `PRAGMA foreign_keys = ON` on every
+  connection; commit versus rollback; no migration tool because the schema is created at startup and the
+  database is ephemeral (state this trade-off in the README).
+- Docs: https://docs.python.org/3/library/sqlite3.html
 
-### SQLite (no package: Python's stdlib `sqlite3` driver, used through SQLAlchemy)
+### SQLite (the database itself)
 - **Why:** zero extra services, a single file, ideal for "one container, one port".
 - **Trade-offs for the README:** single writer; data lives inside the container and disappears with it
   unless a volume is mounted; fine for an advisor tool at this scale.
 - **Rejected:** PostgreSQL (a second service; `docker run` of one image must start everything).
 
 ### httpx
-- **What:** an HTTP client with the same API in sync and async form. `fetch` for Python.
-- **Why over `requests`:** `requests` is sync only; calling it inside `async def` blocks the event
-  loop. httpx has `AsyncClient`, explicit timeouts, and is what FastAPI's `TestClient` is built on,
-  so it is installed anyway.
-- **Used here:** `app/pvgis.py` keeps one `AsyncClient` with `timeout=30`, exposes
-  `fetch_pvcalc(lat, lon, kwp)` and `fetch_hourly(lat, lon, kwp)`, and maps PVGIS failures to your own
-  exception type (no data for location, upstream error, timeout) so the router can pick 422, 502 or 504.
+- **What:** an HTTP client with a `fetch`-like API. Used in its ordinary blocking form here (decision 34).
+- **Why over `requests`:** httpx is what FastAPI's `TestClient` is built on, so it is installed anyway;
+  one client library instead of two. It has explicit timeouts and a clean `response.json()`.
+- **Why not the stdlib `urllib`:** it works, but error handling and JSON decoding take more lines than the
+  one call below, and httpx is already present.
+- **Used here:** `app/pvgis.py` exposes `fetch_pvcalc(lat, lon, kwp)` and `fetch_hourly(lat, lon, kwp)`,
+  each one `httpx.get(url, params=..., timeout=30)`, each raising `HTTPException` directly: 422 when
+  PVGIS reports no data for the location, 502 for anything else (decision 35). Both are decorated with
+  `@functools.lru_cache` (decision 13).
 - **Interview angles:** why every PVGIS call goes through the backend (contract rule, hides the
   upstream, enables caching, keeps the browser same-origin); why timeouts are mandatory; what the app
-  does when PVGIS is down.
+  does when PVGIS is down; why a blocking call inside a plain `def` route does not stall the server.
+- Docs: https://www.python-httpx.org/quickstart/
 - Docs: https://www.python-httpx.org/async/
 
 ### argon2-cffi
@@ -182,12 +194,12 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
 ### pytest
 - **What:** the test runner. A test is any `test_*` function in `tests/test_*.py`; plain `assert` is
   the assertion API; `@pytest.fixture` replaces `beforeEach` and setup helpers.
-- **Used here:** `tests/conftest.py` builds a fresh in-memory SQLite engine and overrides `get_db` via
-  `app.dependency_overrides`; `TestClient(app)` sends requests. Planned tests: register / login /
-  logout / me; user B cannot read user A's site (404); validation errors are per field; missing CSRF
-  header is 403; `energy.py` battery maths on a hand-made 24-hour series; PVGIS error mapping with a
-  monkeypatched `fetch_pvcalc`.
-- **Interview angles:** why tests run on in-memory SQLite (fast, isolated); what a dependency override
+- **Used here:** `tests/conftest.py` builds a fresh temporary SQLite file per test and overrides `get_db` via
+  `app.dependency_overrides`; `TestClient(app)` sends requests. Minimal set (decision 18): register,
+  login and me; user B gets 404 on user A's site; a POST without the CSRF header is 403; `energy.py`
+  battery maths on a hand-made 24-hour series; PVGIS 422 with a monkeypatched `fetch_pvcalc`. Claude
+  gives extra help with the setup and may show project-specific test snippets in chat (decision 33).
+- **Interview angles:** why each test gets its own temporary SQLite file (isolated, and an in-memory database would be empty for every new connection); what a dependency override
   is; why the energy maths is a pure function (testable without the network).
 - Docs: https://docs.pytest.org/en/stable/ and https://fastapi.tiangolo.com/tutorial/testing/
 
@@ -197,13 +209,16 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
 
 ## 5. Deliberately not used (likely interview questions)
 
+- **async/await:** every route is a plain `def`. All routes touch `sqlite3`, which blocks, and FastAPI's
+  thread pool already keeps a slow PVGIS call from stalling other requests, so async would add a trap
+  (blocking inside `async def` freezes the server) with no benefit (decision 34).
 - **JWT:** a signed token cannot be revoked on logout without a denylist; an opaque token in a
   `sessions` table makes logout a `DELETE`. Simpler to explain, safer here.
 - **CORS middleware:** not needed. Dev uses Vite's proxy, production serves the SPA from the same
   origin. Fewer headers, smaller attack surface.
-- **Alembic (migrations):** the schema is created with `SQLModel.metadata.create_all` at startup;
+- **Alembic (migrations):** the schema is created with `CREATE TABLE IF NOT EXISTS` at startup;
   there is no persistent data to migrate.
 - **python-dotenv / pydantic-settings:** no secrets exist (PVGIS needs no key, sessions are database
-  rows); two `os.environ.get` calls with defaults are enough.
+  rows); there is no configuration at all, the database path is a constant (decision 36).
 - **Frontend extras (chart library, TanStack Query, react-hook-form):** all fine, all skipped so that
   every line stays explainable and the dependency list stays short.
