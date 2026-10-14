@@ -415,7 +415,7 @@ Never cut: Docker path, auth with hashing, CSRF and session expiry, ownership is
 
 ## 7. Progress
 
-- [ ] Phase 0 merged
+- [x] Phase 0 merged
 - [ ] Phase 1 merged
 - [ ] Phase 1b merged
 - [ ] Phase 2 merged
