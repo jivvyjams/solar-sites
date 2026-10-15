@@ -103,12 +103,15 @@ unfinished UI rather than letting the branch drift.
    GitHub setting (repository Settings → Branches → add a rule for `main`) that refuses direct pushes to
    `main` and only lets changes in through a pull request; it can also require a CI check to be green
    before the merge button works. For a solo repository it is a seatbelt against habit: it makes the PR step
-   impossible to skip and makes a red CI block the merge. Tick "Require a pull request before merging" and
-   "Require status checks to pass" (select the docker build job). Do it after phase 1, because phase 0
-   commits straight to `main`. The repository owner can always lift the rule if it blocks you.
-3. GitHub Actions (decided): one workflow at `.github/workflows/ci.yml`. Phase 1 adds the job that runs
-   `docker build -t solar .`; phase 6 adds `pytest` in `backend/` and `npm ci && npm run build` in
-   `frontend/`. The docker job alone proves the hand-in command on every push. Ask Claude
+   impossible to skip and makes a red CI block the merge. GitHub now calls this a ruleset (Settings →
+   Rules → Rulesets). Name it, set Active, add the target "Include default branch", and tick "Require a pull
+   request before merging" (required approvals 0, merge method "Merge" allowed), "Block force pushes" and
+   "Restrict deletions". Leave "Require linear history" off, because it forbids merge commits. Add "Require
+   status checks to pass" only if the optional CI job exists (phase 6, decision 24). Do it after phase 1,
+   because phase 0 commits straight to `main`. The repository owner can always lift the rule if it blocks you.
+3. GitHub Actions (optional, decision 24): one workflow at `.github/workflows/ci.yml` with one job that runs
+   `docker build -t solar .`, written in phase 6 if time allows. The docker job alone proves the hand-in
+   command on every push. Ask Claude
    `concept GitHub Actions` before writing it: a workflow is YAML that names a trigger (`on`), jobs, a
    runner image, and steps that are shell commands or reusable actions.
 4. `CLAUDE.md` and `docs/` stay in the repository (decided). The brief allows AI tools and asks you to

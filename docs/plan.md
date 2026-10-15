@@ -35,17 +35,17 @@
 
 ## 1. Timeline at a glance
 
-| Phase | Target                   | Outcome                                                                                | Branch               |
-| ----- | ------------------------ | -------------------------------------------------------------------------------------- | -------------------- |
-| 0     | Wed 14 Oct, evening      | Clean repo, both toolchains run, working agreement committed                           | `main` (direct)      |
-| 1     | Thu 15 Oct, morning      | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on   | `chore/skeleton`     |
-| 1b    | Thu 15 Oct, evening      | Design tokens plus `Button` and `Field`, one-hour timebox                              | `feat/design-system` |
-| 2     | Thu 15 PM → Fri 16 AM    | register/login/logout/me with CSRF; login/register pages; route guard                  | `feat/auth`          |
-| 3     | Fri 16 Oct               | Five site routes with ownership and validation; list/form/detail pages                 | `feat/sites`         |
-| 4     | Sat 17 Oct, morning      | PVGIS PVcalc → production endpoint + monthly chart                                     | `feat/production`    |
-| 5     | Sat 17 PM → Sun 18 AM    | seriescalc + energy simulation → battery endpoint + calculator UI                      | `feat/battery`       |
-| 6     | Sun 18 Oct               | Tests complete, security pass, README, clean-clone Docker test                         | `chore/hardening`    |
-| 7     | Mon 19 Oct, before 12:00 | Final review, quiz, tag `v1.0.0`, submit the link                                      | `main`               |
+| Phase | Target                   | Outcome                                                                                 | Branch               |
+| ----- | ------------------------ | --------------------------------------------------------------------------------------- | -------------------- |
+| 0     | Wed 14 Oct, evening      | Clean repo, both toolchains run, working agreement committed                            | `main` (direct)      |
+| 1     | Thu 15 Oct, morning      | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on | `chore/skeleton`     |
+| 1b    | Thu 15 Oct, evening      | Design tokens plus `Button` and `Field`, one-hour timebox                               | `feat/design-system` |
+| 2     | Thu 15 PM → Fri 16 AM    | register/login/logout/me with CSRF; login/register pages; route guard                   | `feat/auth`          |
+| 3     | Fri 16 Oct               | Five site routes with ownership and validation; list/form/detail pages                  | `feat/sites`         |
+| 4     | Sat 17 Oct, morning      | PVGIS PVcalc → production endpoint + monthly chart                                      | `feat/production`    |
+| 5     | Sat 17 PM → Sun 18 AM    | seriescalc + energy simulation → battery endpoint + calculator UI                       | `feat/battery`       |
+| 6     | Sun 18 Oct               | Tests complete, security pass, README, clean-clone Docker test                          | `chore/hardening`    |
+| 7     | Mon 19 Oct, before 12:00 | Final review, quiz, tag `v1.0.0`, submit the link                                       | `main`               |
 
 Monday morning is the only slack. If a phase slips by more than half a day, apply the cut list in §5.
 Targets assume eight to ten focused hours per day with breaks (confirmed 14 Oct).
@@ -109,9 +109,9 @@ Every phase runs the same loop:
 
 **Acceptance**
 
-- [ ] Dev: Vite page at :5173 shows the health JSON via the proxy.
-- [ ] Docker: page at :8000; `/api/health` is JSON; `/sites` (a client route that does not exist yet) serves `index.html`; `/api/nope` is a JSON 404.
-- [ ] The container runs as non-root (`docker run --rm solar id`).
+- [x] Dev: Vite page at :5173 shows the health JSON via the proxy.
+- [x] Docker: page at :8000; `/api/health` is JSON; `/sites` (a client route that does not exist yet) serves `index.html`; `/api/nope` is a JSON 404.
+- [x] The container runs as non-root (`docker run --rm solar id`).
 
 **Learn first:** ASGI versus WSGI; `APIRouter`; `StaticFiles` and `FileResponse`; path converter `{path:path}`; Docker layers, multi-stage builds, `COPY --from`, `.dockerignore`; `npm ci` versus `npm install`.
 **Interview angles:** why one process serves both; cache-friendly Dockerfile ordering (lockfiles before source); non-root containers.
@@ -284,19 +284,19 @@ Ids (decision 12): generated in Python with `uuid4()` and stored in SQLite as `T
 
 ### 3.2 HTTP status codes (decision 9 in CLAUDE.md)
 
-| Route                            | Success                           | Failures                                                                             |
-| -------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------ |
-| `POST /api/register`             | 201 `{email, csrfToken}` + cookie | 409 email exists; 422 invalid email or password                                      |
-| `POST /api/login`                | 200 `{email, csrfToken}` + cookie | 401 wrong credentials (one message for both cases); 422 malformed body               |
-| `POST /api/logout`               | 204, cookie cleared               | 401 no session; 403 missing or wrong CSRF header                                     |
-| `GET /api/me`                    | 200 `{email, csrfToken}`          | 401                                                                                  |
-| `GET /api/sites`                 | 200 `[site]`                      | 401                                                                                  |
-| `POST /api/sites`                | 201 site                          | 401; 403 CSRF; 422 per-field                                                         |
-| `GET /api/sites/{id}`            | 200 site                          | 401; 404 not found or not the caller's                                               |
-| `PUT /api/sites/{id}`            | 200 site                          | 401; 403 CSRF; 404; 422 per-field                                                    |
-| `DELETE /api/sites/{id}`         | 204                               | 401; 403 CSRF; 404                                                                   |
+| Route                            | Success                           | Failures                                                                                         |
+| -------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `POST /api/register`             | 201 `{email, csrfToken}` + cookie | 409 email exists; 422 invalid email or password                                                  |
+| `POST /api/login`                | 200 `{email, csrfToken}` + cookie | 401 wrong credentials (one message for both cases); 422 malformed body                           |
+| `POST /api/logout`               | 204, cookie cleared               | 401 no session; 403 missing or wrong CSRF header                                                 |
+| `GET /api/me`                    | 200 `{email, csrfToken}`          | 401                                                                                              |
+| `GET /api/sites`                 | 200 `[site]`                      | 401                                                                                              |
+| `POST /api/sites`                | 201 site                          | 401; 403 CSRF; 422 per-field                                                                     |
+| `GET /api/sites/{id}`            | 200 site                          | 401; 404 not found or not the caller's                                                           |
+| `PUT /api/sites/{id}`            | 200 site                          | 401; 403 CSRF; 404; 422 per-field                                                                |
+| `DELETE /api/sites/{id}`         | 204                               | 401; 403 CSRF; 404                                                                               |
 | `GET /api/sites/{id}/production` | 200 `{yearlyKwh, monthlyKwh}`     | 401; 404; 422 PVGIS has no data for the location; 502 any other PVGIS failure, timeouts included |
-| `GET /api/sites/{id}/battery`    | 200 (§3.5)                        | 401; 404; 422 bad query or no data; 502                                              |
+| `GET /api/sites/{id}/battery`    | 200 (§3.5)                        | 401; 404; 422 bad query or no data; 502                                                          |
 
 Why 404 and not 403 for another user's site: the response must not reveal that the id exists. Why 422 for a path id that is not a well-formed UUID: it is a malformed request, not a missing resource, and FastAPI produces it automatically. Why 422 for validation: FastAPI's default and semantically "well-formed but unprocessable". Why 403 for CSRF: the session is valid but the request is not authorised in this form.
 
@@ -372,25 +372,25 @@ Two stages. Stage one builds the frontend with Node 24 and produces `dist/`. Sta
 
 ## 4. Concept map (what to learn, and when)
 
-| Phase | New concepts (ask `concept <name>`)                                                                                                                                                                    |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0     | venv, pip, requirements files, `python -m`, Vite proxy                                                                                                                                                 |
-| 1     | ASGI, FastAPI app and routers, static files and SPA fallback, path converters, multi-stage Docker, `.dockerignore`, non-root containers                                                                |
+| Phase | New concepts (ask `concept <name>`)                                                                                                                                                                            |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | venv, pip, requirements files, `python -m`, Vite proxy                                                                                                                                                         |
+| 1     | ASGI, FastAPI app and routers, static files and SPA fallback, path converters, multi-stage Docker, `.dockerignore`, non-root containers                                                                        |
 | 2     | password hashing, server-side sessions, cookie attributes, CSRF and SameSite, dependency injection, `sqlite3` connections and parameterised queries, unique constraints, React context, Router 7 layout routes |
-| 3     | SQL CRUD and transactions, foreign keys, ownership-scoped queries, Pydantic aliases and constraints, exception handlers, PUT semantics, controlled forms                                               |
-| 4     | `httpx.get` with a timeout, raising `HTTPException` from a helper, `@lru_cache`, monkeypatching in tests                                                                                               |
-| 5     | time-series simulation, pure functions, floating point rounding, `Query` validation, nested response models                                                                                            |
-| 6     | TestClient and dependency overrides, fixtures, security checklist, README structure, clean-clone verification                                                                                          |
+| 3     | SQL CRUD and transactions, foreign keys, ownership-scoped queries, Pydantic aliases and constraints, exception handlers, PUT semantics, controlled forms                                                       |
+| 4     | `httpx.get` with a timeout, raising `HTTPException` from a helper, `@lru_cache`, monkeypatching in tests                                                                                                       |
+| 5     | time-series simulation, pure functions, floating point rounding, `Query` validation, nested response models                                                                                                    |
+| 6     | TestClient and dependency overrides, fixtures, security checklist, README structure, clean-clone verification                                                                                                  |
 
 ## 5. Risks and cut list
 
-| Risk                                    | Mitigation                                                                                               |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| PVGIS slow or down while developing     | Cache; save one real PVcalc and one seriescalc JSON under `backend/tests/fixtures/` on day one           |
+| Risk                                    | Mitigation                                                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| PVGIS slow or down while developing     | Cache; save one real PVcalc and one seriescalc JSON under `backend/tests/fixtures/` on day one                |
 | Design system grows beyond its timebox  | One hour Thursday evening, two hours Sunday; tokens plus `Button` and `Field` only; polish is on the cut list |
-| Python 3.14 wheel missing for a package | Use `python:3.13-slim` in Docker and a 3.13 venv locally (`pacman -S python313` or pyenv)                |
-| Backend learning curve eats Thursday    | Phase 1 stays tiny; phase 2 backend before any frontend; ask `brief` before coding                       |
-| Running out of time                     | Cut list, from the bottom up                                                                             |
+| Python 3.14 wheel missing for a package | Use `python:3.13-slim` in Docker and a 3.13 venv locally (`pacman -S python313` or pyenv)                     |
+| Backend learning curve eats Thursday    | Phase 1 stays tiny; phase 2 backend before any frontend; ask `brief` before coding                            |
+| Running out of time                     | Cut list, from the bottom up                                                                                  |
 
 Cut list (cut from the bottom first; everything above the line stays):
 
