@@ -127,9 +127,9 @@ Every phase runs the same loop:
 
 **Acceptance**
 
-- [ ] Both components render their states (hover, focus-visible, disabled, invalid) on a scratch page; focus rings visible with keyboard navigation.
-- [ ] No hex values outside `index.css`.
-- [ ] `npm run build` and `npm run lint` pass. The one-hour timer was respected.
+- [x] Both components render their states (hover, focus-visible, disabled, invalid) on a scratch page; focus rings visible with keyboard navigation.
+- [x] No hex values outside `index.css`.
+- [x] `npm run build` and `npm run lint` pass. The one-hour timer was respected.
 
 **Learn first:** Tailwind 4 `@theme` and CSS-first configuration; `focus-visible`.
 **Interview angles:** why tokens as CSS variables; why one hour was enough; why the button blue is Praeter's darker step (AA contrast).
@@ -366,38 +366,38 @@ Two stages. Stage one builds the frontend with Node 24 and produces `dist/`. Sta
 
 **Tokens** (the user types these into `@theme`; ratios are against white):
 
-| Token                  | Value                               | Rule                                                                                   |
-| ---------------------- | ----------------------------------- | -------------------------------------------------------------------------------------- |
-| `--color-canvas`       | `#F3F7F7`                           | page background                                                                        |
-| `--color-surface`      | `#FFFFFF`                           | cards, inputs, nav                                                                     |
-| `--color-border`       | `#CDD8D8`                           | inputs, outlined buttons, dividers; cards have no border                               |
-| `--color-text`         | `#1F242E`                           | body and headings, 16:1                                                                |
+| Token                  | Value                               | Rule                                                                                      |
+| ---------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `--color-canvas`       | `#F3F7F7`                           | page background                                                                           |
+| `--color-surface`      | `#FFFFFF`                           | cards, inputs, nav                                                                        |
+| `--color-border`       | `#CDD8D8`                           | inputs, outlined buttons, dividers; cards have no border                                  |
+| `--color-text`         | `#1F242E`                           | body and headings, 16:1                                                                   |
 | `--color-text-muted`   | `#6C6E71`                           | labels, addresses, axis text; 5.1:1 (4.7:1 on canvas). Praeter's `#7A7A7A` fails at 4.3:1 |
-| `--color-brand`        | `#2981B7`                           | focus ring and wordmark icon only; 4.3:1, never for text                               |
-| `--color-accent`       | `#1F6692`                           | primary button fill, links, eyebrows; white on it 6.2:1                                |
-| `--color-accent-hover` | `#1F3E51`                           | hover for buttons and links                                                            |
-| `--color-accent-soft`  | `#E3EEF5`                           | tinted chips, highlighted column, the PVGIS no-data notice                             |
-| `--color-solar`        | `#4E8A35`                           | chart bars; 4.2:1 (bars need 3:1); never text at body size                             |
-| `--color-solar-soft`   | `#CFE4B6`                           | tint behind the battery gain                                                           |
-| `--color-danger`       | `#B42318`                           | field errors, outlined delete button; 6.6:1                                            |
-| `--color-danger-soft`  | `#FBEAE8`                           | error banner background, danger hover                                                  |
-| `--font-sans`          | `"Karla", system-ui, sans-serif`    | everything, including large numbers                                                    |
-| `--font-display`       | `"Basic", "Karla", sans-serif`      | h1 and h2 only; Basic ships one weight (400), size carries the hierarchy               |
-| `--radius-control`     | `6px`                               | buttons, inputs                                                                        |
-| `--radius-card`        | `12px`                              | cards                                                                                  |
-| `--shadow-card`        | `0 2px 14px rgb(41 129 182 / 0.08)` | cards on the canvas                                                                    |
+| `--color-brand`        | `#2981B7`                           | focus ring and wordmark icon only; 4.3:1, never for text                                  |
+| `--color-accent`       | `#1F6692`                           | primary button fill, links, eyebrows; white on it 6.2:1                                   |
+| `--color-accent-hover` | `#1F3E51`                           | hover for buttons and links                                                               |
+| `--color-accent-soft`  | `#E3EEF5`                           | tinted chips, highlighted column, the PVGIS no-data notice                                |
+| `--color-solar`        | `#4E8A35`                           | chart bars; 4.2:1 (bars need 3:1); never text at body size                                |
+| `--color-solar-soft`   | `#CFE4B6`                           | tint behind the battery gain                                                              |
+| `--color-danger`       | `#B42318`                           | field errors, outlined delete button; 6.6:1                                               |
+| `--color-danger-soft`  | `#FBEAE8`                           | error banner background, danger hover                                                     |
+| `--font-sans`          | `"Karla", system-ui, sans-serif`    | everything, including large numbers                                                       |
+| `--font-display`       | `"Basic", "Karla", sans-serif`      | h1 and h2 only; Basic ships one weight (400), size carries the hierarchy                  |
+| `--radius-control`     | `6px`                               | buttons, inputs                                                                           |
+| `--radius-card`        | `12px`                              | cards                                                                                     |
+| `--shadow-card`        | `0 2px 14px rgb(41 129 182 / 0.08)` | cards on the canvas                                                                       |
 
 No custom type scale or spacing: Tailwind defaults (`text-sm` 14, `text-base` 16, `text-2xl` 24, `text-3xl` 30, `text-5xl` for the one hero figure per page). Focus ring is a utility recipe, not a token: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`. Buttons and inputs are both 40px tall (`h-10`) so they line up in a row.
 
 **Components, by the phase that first needs them.**
 
-| Phase | Component                                                                                                     |
-| ----- | ------------------------------------------------------------------------------------------------------------- |
+| Phase | Component                                                                                                                                                       |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1b    | `Button` (primary filled, secondary outlined with accent text, danger outlined; hover, focus-visible, disabled, loading) and `Field` (label, input, error slot) |
-| 2     | `NavBar`; the login card and error banner are inline utilities                                                 |
-| 3     | `PageHeader`, `ErrorBanner`, `EmptyState`, `Spinner`; site rows and the form grid are inline                   |
-| 4     | `MonthlyChart` (twelve div bars, 24px wide, 4px top radius, hairline gridlines, month labels, one hover tooltip) |
-| 5     | battery form, gain tile and comparison table inline on the detail page                                         |
+| 2     | `NavBar`; the login card and error banner are inline utilities                                                                                                  |
+| 3     | `PageHeader`, `ErrorBanner`, `EmptyState`, `Spinner`; site rows and the form grid are inline                                                                    |
+| 4     | `MonthlyChart` (twelve div bars, 24px wide, 4px top radius, hairline gridlines, month labels, one hover tooltip)                                                |
+| 5     | battery form, gain tile and comparison table inline on the detail page                                                                                          |
 
 Everything not in this table is inline utility classes on the page; extract a component only when the same markup appears a third time.
 
