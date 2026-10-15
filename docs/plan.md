@@ -38,7 +38,7 @@
 | Phase | Target                   | Outcome                                                                                | Branch               |
 | ----- | ------------------------ | -------------------------------------------------------------------------------------- | -------------------- |
 | 0     | Wed 14 Oct, evening      | Clean repo, both toolchains run, working agreement committed                           | `main` (direct)      |
-| 1     | Thu 15 Oct, morning      | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; CI builds the image | `chore/skeleton`     |
+| 1     | Thu 15 Oct, morning      | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on   | `chore/skeleton`     |
 | 1b    | Thu 15 Oct, evening      | Design tokens plus `Button` and `Field`, one-hour timebox                              | `feat/design-system` |
 | 2     | Thu 15 PM → Fri 16 AM    | register/login/logout/me with CSRF; login/register pages; route guard                  | `feat/auth`          |
 | 3     | Fri 16 Oct               | Five site routes with ownership and validation; list/form/detail pages                 | `feat/sites`         |
