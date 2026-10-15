@@ -1,3 +1,21 @@
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from app.routers import health
 
 app = FastAPI()
+app.include_router(health.router)
+
+STATIC_DIR = Path("static")
+
+if STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"))
+
+    @app.get("/{rest:path}")
+    def serve_frontend(rest: str) -> FileResponse:
+        if rest == "api" or rest.startswith("api/"):
+            raise HTTPException(status_code=404)
+        return FileResponse(STATIC_DIR / "index.html")
