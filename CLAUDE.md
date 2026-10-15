@@ -193,7 +193,7 @@ Claude:
 | Layer         | Choice                                                                                                             | One-line why                                                                              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | Frontend      | Vite + React 19 + TypeScript + React Router 7 + Tailwind 4, npm                                                    | SPA served by the backend; the user's strongest skills; no React server needed            |
-| Design system | Tailwind 4 `@theme` tokens in `index.css`, light mode only, base components in `src/components/`                   | user's differentiator; CSS-first, no config file                                          |
+| Design system | Tailwind 4 `@theme` tokens in `index.css` (Praeter palette as roles, Karla + Basic from Google Fonts), light mode only, base components in `src/components/`; mockup in `docs/plan.md` §3.8 | user's differentiator; CSS-first, no config file                                          |
 | Backend       | FastAPI + Pydantic v2                                                                                              | type-hint driven, auto docs at `/docs`, async for PVGIS calls                             |
 | Database       | SQLite through Python's stdlib `sqlite3`, hand-written SQL, no ORM | SQL stays visible and explainable; `?` placeholders for every value; zero extra services in the container |
 | HTTP client   | httpx, blocking form (no async in this project, decision 34)                                                       | one `get` call with a timeout; also powers TestClient                                     |
@@ -345,11 +345,15 @@ shown, applied until the user says `change #n`), **done**.
 | 35  | 2026-10-14 | `pvgis.py` raises `HTTPException` directly: 422 when PVGIS reports no data for the location, 502 for any other failure including timeouts; no custom exception class, no 504 | Fewer moving parts; the two outcomes are all the client can act on | decided |
 | 36  | 2026-10-14 | No configuration and no lifespan hook: the database path is a constant; `init_db()` runs at import time in `main.py`; `users` and `sites` carry no timestamps, `sessions` keeps `created_at` for expiry | Nothing to configure; one line instead of an async context manager | decided |
 | 37  | 2026-10-14 | KISS review outcome: reconsidered and kept on purpose: routers (two files), session expiry, `@lru_cache`, branch protection, cookie + CSRF sessions, UUIDs, `EmailStr`, argon2, non-root Docker, `uvicorn[standard]`. Frontend simplifications deferred to the user; CI made optional | Each kept item costs a few lines and buys safety, speed or clarity; the user judged the removals not worth the workaround | decided |
+| 38  | 2026-10-15 | Design direction (`docs/plan.md` §3.8): Praeter's palette and type reduced to roles (13 colours, two radii, one shadow); Karla for copy and Basic for h1/h2 from Google Fonts, which amends "one sans family" in 26; blue for actions, green for solar data; top nav bar with a centred 1152px column; tinted page with borderless shadowed cards; sites page as rows in one card; light mode only. The mockup on a Claude Design canvas (link in §3.8 and §11) is a reference, not scope: each component is built in the phase that first needs it | Design is the user's differentiator and matching praeter.energy costs one extra token and one link tag; the AA-safe shades are Praeter's own darker steps (their brand blue under white text is 4.3:1, so buttons use `#1F6692`) | decided |
+| 39  | 2026-10-15 | A map pane on the sites page (Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with attribution, `CircleMarker` per site with a popup linking to the site) is a stretch item: branch `feat/map`, Sunday evening at the earliest, only when phase 6 is merged and green; dropped otherwise. Reserve if dropped: one "Open in OpenStreetMap" link per site. Details in `docs/plan.md` §5 | The brief grades correctness and safety, not features; two packages and a third-party tile host to explain in the interview; three to four hours for a first Leaflet user; phases 2 to 6 come first | decided |
+| 40  | 2026-10-15 | Icons: Phosphor (`@phosphor-icons/react`), one package, named imports only; `regular` weight, 16px inside buttons and 20px elsewhere, `fill` for a selected state; `CircleNotch` in `duotone` weight with `animate-spin` is the loading spinner, the one non-regular icon, because its faint full ring doubles as the track; decorative icons get `aria-hidden`, icon-only buttons get `aria-label`. Replaces the hand-written inline SVGs in the mockup. Amends 16 | User preference; matches praeter.energy's thin-line chip icons; named imports are tree-shaken so only the icons used ship; one component API (`size`, `weight`) instead of hand-maintained SVG paths | decided |
 
 ## 10. Open questions
 
 None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the amended rows 10, 13, 14,
-18, 24 and 26. Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
+18, 24 and 26. The design direction and the map question of 2026-10-15 are resolved in decisions 38 and 39.
+Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
 
 ## 11. Pointers
 
@@ -360,3 +364,4 @@ None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the
 - Git and GitHub: [docs/git-workflow.md](docs/git-workflow.md)
 - PVGIS API docs: https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/getting-started-pvgis/api-non-interactive-service_en
 - Tailwind 4 theme variables: https://tailwindcss.com/docs/theme
+- Design mockup (Claude Design canvas, private to the user): https://claude.ai/artifact/QGhAVhf7DUyFrZfxzYeDTj

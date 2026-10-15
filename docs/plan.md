@@ -122,17 +122,17 @@ Every phase runs the same loop:
 
 **Steps**
 
-1. `src/index.css`: the `@theme` block with your colour roles, one font, radii and a focus ring. Remove every leftover Vite style.
-2. `src/components/`: `Button` and `Field` (label, input, error slot). Typed props, no data fetching inside. Other components only when a page needs them.
+1. `index.html`: one Google Fonts `<link>` for Karla and Basic. `src/index.css`: the `@theme` block from §3.8 (colour roles, two font families, two radii, one shadow). Remove every leftover Vite style.
+2. `src/components/`: `Button` and `Field` (label, input, error slot). Typed props, no data fetching inside. Other components only when a page needs them (§3.8 says which phase).
 
 **Acceptance**
 
-- [ ] Both components render their states (hover, focus-visible, disabled, invalid) on a scratch page; focus rings visible with keyboard navigation.
-- [ ] No hex values outside `index.css`.
-- [ ] `npm run build` and `npm run lint` pass. The one-hour timer was respected.
+- [x] Both components render their states (hover, focus-visible, disabled, invalid) on a scratch page; focus rings visible with keyboard navigation.
+- [x] No hex values outside `index.css`.
+- [x] `npm run build` and `npm run lint` pass. The one-hour timer was respected.
 
 **Learn first:** Tailwind 4 `@theme` and CSS-first configuration; `focus-visible`.
-**Interview angles:** why tokens as CSS variables; why one hour was enough.
+**Interview angles:** why tokens as CSS variables; why one hour was enough; why the button blue is Praeter's darker step (AA contrast).
 
 ### Phase 2: Authentication (Thu 15 PM → Fri 16 AM)
 
@@ -259,7 +259,7 @@ Every phase runs the same loop:
 4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement.
 5. Clean-clone test: `git clone` into a temp dir, `docker build`, `docker run`, walk the manual script in §6 with two users in private windows.
 6. CI: add the pytest and npm build jobs to the workflow. Optional: security headers middleware (`X-Content-Type-Options: nosniff`, `Referrer-Policy`, a basic CSP).
-7. Design polish pass, two-hour timebox: spacing consistency, every state on every page, the chart, the battery comparison, empty states. Stop when the timer ends.
+7. Design polish pass, two-hour timebox: spacing consistency, every state on every page, the chart, the battery comparison, empty states. Candidates noted 15 Oct: a 1px card border like praeter.energy, hover transitions on cards and buttons (`transition-shadow`, `transition-colors`). Stop when the timer ends.
 
 ### Phase 7: Hand-in (Mon 19 Oct, before 12:00)
 
@@ -356,19 +356,54 @@ Design: the system in §3.8. Every async view has loading, error and empty state
 
 Two stages. Stage one builds the frontend with Node 24 and produces `dist/`. Stage two is Python 3.14 slim: install `requirements.txt`, copy `backend/app`, copy `dist` into `static/`, create `data/`, run as a non-root user, expose 8000, start uvicorn on `0.0.0.0`. The SQLite file lives in `data/` inside the container; mounting a volume there persists it (mention in README).
 
-### 3.8 Design tokens (decided 14 Oct, shortened under KISS; light mode only)
+### 3.8 Design system (direction settled 15 Oct, decision 38; light mode only)
 
-**Mechanism.** Tailwind 4 is CSS-first. Tokens are CSS variables declared in an `@theme { ... }` block in `src/index.css`, and every token automatically becomes a utility class: `--color-brand-600` gives `bg-brand-600` and `text-brand-600`, `--radius-card` gives `rounded-card`, `--font-sans` sets the sans stack. There is no `tailwind.config.js`. Docs: https://tailwindcss.com/docs/theme
+**Mockup.** https://claude.ai/artifact/QGhAVhf7DUyFrZfxzYeDTj (Claude Design canvas, private to the user): a design sheet plus Login, Sites, Site form, Site detail, and a stretch "Sites with map" artboard. It is a reference, not a to-do list: each page is built in its own phase with only the components it needs.
 
-**Scope** (one hour on Thursday evening, then stop):
+**Mechanism.** Tailwind 4 is CSS-first. Tokens are CSS variables declared in an `@theme { ... }` block in `src/index.css`, and every token automatically becomes a utility class: `--color-accent` gives `bg-accent` and `text-accent`, `--radius-card` gives `rounded-card`, `--font-display` gives `font-display`. There is no `tailwind.config.js`. Docs: https://tailwindcss.com/docs/theme
 
-1. Colour roles, not swatches: `--color-surface`, `--color-border`, `--color-text`, `--color-text-muted`, `--color-accent`, `--color-accent-hover`, `--color-danger`. The accent doubles as the chart colour.
-2. One sans family, two radii (`--radius-control`, `--radius-card`), one focus ring.
-3. `Button` (primary, secondary, danger; loading) and `Field` (label, input, error). Everything else is inline utility classes on the page, using the tokens; extract a component only when the same markup appears a third time.
+**Direction.** Praeter's own palette and type reduced to roles. Blue for actions, green for solar data. Karla for copy and numbers, Basic for h1 and h2 (both from Google Fonts, one `<link>` in `index.html`). Top nav bar (wordmark left, email and Log out right), content in a centred 1152px column (`max-w-6xl px-7`). Tinted page with white cards that carry a soft shadow and no border. Sites page is a list of rows in one card (name and address left, capacity and roof area right). Icons come from Phosphor (`@phosphor-icons/react`, decision 40): regular weight, 16px in buttons and 20px elsewhere, `CircleNotch` in duotone weight with `animate-spin` as the spinner (the one non-regular icon: its faint ring is the track), `aria-hidden` on every decorative icon.
 
-**Rules.** Tokens only in `index.css`; no arbitrary values (`[#hex]`, `[13px]`) in pages; no dark mode; WCAG AA contrast for text; everything keyboard-reachable with a visible focus ring.
+**Tokens** (the user types these into `@theme`; ratios are against white):
 
-**Interview angle.** The reviewers do not grade design, so be ready to say the tokens cost an hour and kept every page consistent without a component library.
+| Token                  | Value                               | Rule                                                                                      |
+| ---------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `--color-canvas`       | `#F3F7F7`                           | page background                                                                           |
+| `--color-surface`      | `#FFFFFF`                           | cards, inputs, nav                                                                        |
+| `--color-border`       | `#CDD8D8`                           | inputs, outlined buttons, dividers; cards have no border                                  |
+| `--color-text`         | `#1F242E`                           | body and headings, 16:1                                                                   |
+| `--color-text-muted`   | `#6C6E71`                           | labels, addresses, axis text; 5.1:1 (4.7:1 on canvas). Praeter's `#7A7A7A` fails at 4.3:1 |
+| `--color-brand`        | `#2981B7`                           | focus ring and wordmark icon only; 4.3:1, never for text                                  |
+| `--color-accent`       | `#1F6692`                           | primary button fill, links, eyebrows; white on it 6.2:1                                   |
+| `--color-accent-hover` | `#1F3E51`                           | hover for buttons and links                                                               |
+| `--color-accent-soft`  | `#E3EEF5`                           | tinted chips, highlighted column, the PVGIS no-data notice                                |
+| `--color-solar`        | `#4E8A35`                           | chart bars; 4.2:1 (bars need 3:1); never text at body size                                |
+| `--color-solar-soft`   | `#CFE4B6`                           | tint behind the battery gain                                                              |
+| `--color-danger`       | `#B42318`                           | field errors, outlined delete button; 6.6:1                                               |
+| `--color-danger-soft`  | `#FBEAE8`                           | error banner background, danger hover                                                     |
+| `--font-sans`          | `"Karla", system-ui, sans-serif`    | everything, including large numbers                                                       |
+| `--font-display`       | `"Basic", "Karla", sans-serif`      | h1 and h2 only; Basic ships one weight (400), size carries the hierarchy                  |
+| `--radius-control`     | `6px`                               | buttons, inputs                                                                           |
+| `--radius-card`        | `12px`                              | cards                                                                                     |
+| `--shadow-card`        | `0 2px 14px rgb(41 129 182 / 0.08)` | cards on the canvas                                                                       |
+
+No custom type scale or spacing: Tailwind defaults (`text-sm` 14, `text-base` 16, `text-2xl` 24, `text-3xl` 30, `text-5xl` for the one hero figure per page). Focus ring is a utility recipe, not a token: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`. Buttons and inputs are both 40px tall (`h-10`) so they line up in a row.
+
+**Components, by the phase that first needs them.**
+
+| Phase | Component                                                                                                                                                       |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1b    | `Button` (primary filled, secondary outlined with accent text, danger outlined; hover, focus-visible, disabled, loading) and `Field` (label, input, error slot) |
+| 2     | `NavBar`; the login card and error banner are inline utilities                                                                                                  |
+| 3     | `PageHeader`, `ErrorBanner`, `EmptyState`, `Spinner`; site rows and the form grid are inline                                                                    |
+| 4     | `MonthlyChart` (twelve div bars, 24px wide, 4px top radius, hairline gridlines, month labels, one hover tooltip)                                                |
+| 5     | battery form, gain tile and comparison table inline on the detail page                                                                                          |
+
+Everything not in this table is inline utility classes on the page; extract a component only when the same markup appears a third time.
+
+**Rules.** Tokens only in `index.css`; no arbitrary values (`[#hex]`, `[13px]`) in pages; no dark mode; WCAG AA contrast for text (3:1 from 24px); every interactive element keyboard-reachable with the brand focus ring; text never wears the solar green or the brand blue at body size; one hero figure per page.
+
+**Interview angle.** The reviewers do not grade design, so be ready to say: the tokens are Praeter's own values picked for AA contrast, they cost an hour, and they kept every page consistent without a component library. Know why the brand blue is not the button colour (white on it is 4.3:1, under AA's 4.5:1).
 
 ## 4. Concept map (what to learn, and when)
 
@@ -401,6 +436,8 @@ Cut list (cut from the bottom first; everything above the line stays):
 5. `@lru_cache` on the PVGIS calls (call PVGIS every time; slower but correct)
 
 Never cut: Docker path, auth with hashing, CSRF and session expiry, ownership isolation, per-field validation, production, battery, the minimal tests, README.
+
+Stretch (decision 39; only when phase 6 is merged and green, Sunday evening at the earliest, branch `feat/map`): a map pane on the sites page with Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with the "© OpenStreetMap contributors" line, one `CircleMarker` per site (not `Marker`: its icon images break under Vite) with a popup linking to the site, bounds fitted to the sites, and an explicit container height. The "Sites with map" artboard on the canvas is the target. About three to four hours including the README paragraph. If it is dropped, the reserve is one "Open in OpenStreetMap" link per site built from the coordinates, zero packages.
 
 ## 6. End-to-end manual test script (run on the Docker image)
 
