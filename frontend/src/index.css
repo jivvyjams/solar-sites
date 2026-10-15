@@ -3,4 +3,32 @@
 @theme {
   --font-display: "Basic", "Karla", sans-serif;
   --font-sans: "Karla", system-ui, sans-serif;
+
+  --color-canvas: #f3f7f7;
+  --color-surface: #ffffff;
+  --color-border: #cdd8d8;
+
+  --color-text: #1f242e;
+  --color-text-muted: #6c6e71;
+  --color-brand: #2981b7;
+
+  --color-accent: #1f6692;
+  --color-accent-hover: #1f3e51;
+  --color-accent-soft: #e3eef5;
+
+  --color-solar: #4e8a35;
+  --color-solar-soft: #cfe4b6;
+  --color-danger: #b42318;
+  --color-danger-soft: #fbeae8;
+
+  --radius-control: 6px;
+  --radius-card: 12px;
+  --shadow-card: 0 2px 14px rgb(41 129 182 / 0.08);
+}
+
+@layer base {
+  body {
+    color: var(--color-text);
+    background-color: var(--color-canvas);
+  }
 }
