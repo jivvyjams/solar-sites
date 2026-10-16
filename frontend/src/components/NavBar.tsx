@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router";
-import { SignOutIcon, SunIcon } from "@phosphor-icons/react";
+import { SignOutIcon, SolarPanelIcon } from "@phosphor-icons/react";
 import { useAuth } from "../auth/useAuth";
 import Button from "./Button";
 
@@ -14,7 +14,12 @@ export default function NavBar(): ReactElement {
           to="/"
           className="flex items-center gap-2 font-display text-xl rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
-          <SunIcon size={20} className="text-brand" aria-hidden="true" />
+          <SolarPanelIcon
+            size={32}
+            weight="duotone"
+            className="text-brand"
+            aria-hidden="true"
+          />
           Solar Sites
         </Link>
         <div className="flex items-center gap-4">
