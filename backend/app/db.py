@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     csrf_token TEXT NOT NULL,
     user_id TEXT NOT NULL REFERENCES users(id),
     created_at TEXT NOT NULL
-)
+);
 CREATE TABLE IF NOT EXISTS sites (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id),

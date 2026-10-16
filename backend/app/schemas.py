@@ -15,6 +15,7 @@ class MeOut(CamelModel):
     email: str
     csrf_token: str
 
+
 class SiteIn(CamelModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
@@ -24,6 +25,7 @@ class SiteIn(CamelModel):
     longitude: float = Field(ge=-180, le=180)
     roof_area_m2: float | None = Field(default=None, gt=0)
     peak_kwp: float = Field(gt=0, le=1000)
+
 
 class SiteOut(SiteIn):
     id: str
