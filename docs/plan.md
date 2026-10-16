@@ -15,8 +15,8 @@
 - [ ] `docker build -t solar .` then `docker run -p 8000:8000 solar` serves the app on http://localhost:8000 from a clean clone.
 - [ ] All eleven contract routes exist with the exact paths, camelCase field names, and the status codes in §3.2.
 - [x] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
-- [ ] Sites CRUD is scoped to the caller. Another user's site id returns 404.
-- [ ] POST/PUT /api/sites return a message per invalid field.
+- [x] Sites CRUD is scoped to the caller. Another user's site id returns 404.
+- [x] POST/PUT /api/sites return a message per invalid field.
 - [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
 - [ ] Battery endpoint runs an hourly simulation with the consumption model documented in the README.
 - [ ] Backend tests cover auth flow, ownership isolation, validation, CSRF, energy maths. `pytest` is green.
@@ -261,9 +261,9 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Acceptance**
 
-- [ ] Two users in two private windows cannot see each other's sites by URL or id.
-- [ ] A bad latitude shows a message under that field.
-- [ ] `pytest` green.
+- [x] Two users in two private windows cannot see each other's sites by URL or id.
+- [x] A bad latitude shows a message under that field.
+- [x] `pytest` green.
 
 **Learn first:** the `uuid` module; SQL `INSERT`, `SELECT`, `UPDATE` and `DELETE` with `?` placeholders, `commit` and `rollback`, `cursor.rowcount`; foreign keys; why ownership is a `WHERE` clause and not a check after fetching; PUT semantics (full replacement); mass assignment; Pydantic aliases and `Field` constraints; custom exception handlers; React controlled forms with number inputs, `useParams`, `useNavigate`.
 **Interview angles:** 404 versus 403 for someone else's site; UUIDs are not authorisation on their own, so ownership stays a WHERE clause; where validation lives (both sides, server authoritative).
@@ -527,7 +527,7 @@ Stretch (decision 39; only when phase 6 is merged and green, Sunday evening at t
 - [x] Phase 1 merged
 - [x] Phase 1b merged
 - [x] Phase 2 merged
-- [ ] Phase 3 merged
+- [x] Phase 3 merged
 - [ ] Phase 4 merged
 - [ ] Phase 5 merged
 - [ ] Phase 6 merged
