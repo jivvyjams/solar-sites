@@ -45,7 +45,8 @@ or future-proofing.
   full frontend in a team. Advanced Linux and terminal user (tiling WM, tmux). Strong design interest.
 - **No Python experience at all.** Zero backend experience. New to FastAPI, SQL and ORMs, HTTP sessions,
   Docker for apps. Quick study; transfers from a JavaScript base.
-- Learns best from JavaScript/TypeScript/React/npm analogies, then the Python idiom, then the docs link.
+- Learns best from a plain explanation of what the code does, then the Python idiom, then the docs link.
+  JavaScript analogies only when the user asks for one (decision 44).
   Primer: [docs/python-for-js-devs.md](docs/python-for-js-devs.md).
 - Is preparing for a technical interview about this code. Interview readiness is a first-class goal.
 - Works eight to ten hours a day with breaks until the deadline. Communicates in English only.
@@ -67,7 +68,8 @@ or future-proofing.
 
 ### 3.2 Claude must never
 
-- Write or edit a T-tier file. For those, Claude gives the snippet in chat and the user types it in.
+- Write or edit a T-tier file, or any file under `backend/` (decision 44). For those, Claude gives the snippet
+  in chat and the user types it in.
 - Draft a file the user has not asked for with `draft <file>`, or put a new package, a new concept without
   an L1 line, or a feature beyond the brief into a draft.
 - Run `git add`, `git commit`, `git push`, `git merge`, `git rebase`, `git reset`, `git restore`,
@@ -98,12 +100,12 @@ line each, so the user always knows what happened outside the conversation.
 
 | Level | Name            | What it is                                                                                                                                                                                                                                                                      |
 | ----- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L0    | **syntax**      | For every Python construct the first time it appears (decorator, `self`, `with`, `yield`, comprehension, type hint, `**kwargs`, `raise`, `__init__`, slicing): one line mapping it to the JavaScript equivalent, plus the section of `docs/python-for-js-devs.md`.               |
+| L0    | **syntax**      | For every Python construct the first time it appears (decorator, `self`, `with`, `yield`, comprehension, type hint, `**kwargs`, `raise`, `__init__`, slicing): one plain line on what it does (JavaScript equivalent only on request), plus the primer section.                    |
 | L1    | **concept**     | What the thing is, why it exists, the mental model, the TS/React/npm analogy, the official docs link, one "interview angle" line.                                                                                                                                               |
 | L2    | **snippet**     | For a T-tier file: the project-specific code, in chunks of 20 to 30 lines. For a `concept` question: a minimal generic example. See the snippet rules.                                                                                                                          |
-| L3    | **breakdown**   | The snippet annotated line by line in a table: line, what it does, the JavaScript equivalent. Every T-tier snippet chunk comes with its breakdown.                                                                                                                             |
+| L3    | **breakdown**   | The snippet annotated line by line in a table: line, what it does; confusing syntax explained below it. Every T-tier chunk comes with its breakdown.                                                                                                                             |
 | L4    | **outline**     | Project-specific plan in words: which file, which function and signature, numbered steps, inputs/outputs, edge cases, status codes, which tests to write. No code.                                                                                                              |
-| L5    | **draft**       | Claude writes a D-tier file to disk, copying the patterns already in the repository, runs the checks that apply, and lists what it wrote. Always followed by a `walkthrough`.                                                                                                   |
+| L5    | **draft**       | Claude writes a D-tier file (frontend only, decision 44) to disk, copying the patterns already in the repository, runs the checks that apply, and lists what it wrote. Always followed by a `walkthrough`.                                                                                                   |
 
 Default depth by domain:
 
@@ -121,7 +123,7 @@ Snippet rules (T files):
 - Current idioms only: Pydantic v2, stdlib `sqlite3` with `?` placeholders, React 19 function components, Router 7
   imports from `react-router`, Tailwind 4 CSS-first config.
 - Typed. Python snippets carry type hints; TS snippets carry explicit types.
-- Prefer the JavaScript analogy over Python jargon; name the jargon once so the user can search the docs.
+- No JavaScript equivalents unless the user asks (decision 44); name the Python jargon once so the user can search the docs.
 - Generic toy examples (`Book`, `Todo`, `Battery` as a toy) remain the form for `concept` answers.
 
 Outline rules (L4):
@@ -192,7 +194,7 @@ Claude:
 
 ### 3.9 Tone and format
 
-- Analogy first, Python idiom second, docs link third. Name the interview angle.
+- Plain explanation first, Python idiom second, docs link third. Name the interview angle.
 - Short answers. One concept at a time. Prefer a table to a paragraph when comparing.
 - English only. No flattery, no hedging about settled decisions.
 
@@ -359,12 +361,13 @@ shown, applied until the user says `change #n`), **done**.
 | 41  | 2026-10-16 | Two file tiers: **T** (typed by the user from project-specific snippets with line-by-line breakdowns: `db.py`, `auth.py`, `routers/auth.py`, the ownership helper and first site routes, `pvgis.py`, `energy.py`, `conftest.py` and the first tests, `client.ts`, `auth.ts`, `AuthContext`, `Login`, `RequireAuth`) and **D** (drafted by Claude on `draft <file>` from a pattern already in the repository, then walked through by the user before commit: `schemas.py`, put/delete routes, later test files, `types.ts`, `Register`, `NavBar`, the small components, `SiteForm`, `SiteDetail`, `MonthlyChart`, battery UI, README body). Tier table in `docs/plan.md` §2. Amends 4, 7 and 33 and replaces the per-file override protocol; the README AI-usage paragraph is the public record of the process | Pattern-following files add no new concept; the core modules are where the understanding must be, so that is where the typing goes | decided |
 | 42  | 2026-10-16 | Cut list applied (`docs/plan.md` §5): security-headers middleware dropped; design polish one hour instead of two; CI only if the workflow is drafted in under ten minutes; map unchanged (39) | Must-haves first; every item was already on the cut list | decided |
 | 43  | 2026-10-16 | Task loop: one task at a time. For each task Claude gives a detailed step-by-step breakdown, ending with the exact git commands to commit it; the next task starts only after that commit | One finished, committed unit at a time keeps the branch green and every diff reviewable | decided |
+| 44  | 2026-10-16 | Every backend file is T tier: the user types all of `backend/` from snippets with line-by-line breakdowns and syntax notes; Claude writes no backend code. Breakdowns drop the JavaScript column; JS analogies only on request. Frontend D files stay available on an explicit `draft <file>`. Amends 27 and 41 | The user wants to understand everything that happens in the backend | decided |
 
 ## 10. Open questions
 
 None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the amended rows 10, 13, 14,
 18, 24 and 26. The design direction and the map question of 2026-10-15 are resolved in decisions 38 and 39.
-The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 43.
+The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 44.
 Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
 
 ## 11. Pointers

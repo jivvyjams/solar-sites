@@ -53,7 +53,7 @@ only slack. If a phase slips by more than half a day, apply the cut list in §5.
 
 ## 2. Phases
 
-Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D = drafted by Claude):
+Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D = drafted by Claude; every backend file is T, decision 44):
 
 1. Ask Claude `brief phase N`. You get the tier table below in build order, the concepts to learn, API shapes in words, acceptance checks and tests.
 2. Backend T files first: `snippet <file>` gives the project-specific code chunk by chunk with a breakdown table; type it in; exercise it in `/docs`. Then the frontend, then end to end in the browser.
@@ -68,12 +68,12 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | File | Tier | Note |
 | --- | --- | --- |
 | `backend/app/db.py` | T | `connect`, `init_db`, `get_db`; new: `sqlite3`, `yield` dependency |
-| `backend/app/schemas.py` | D | Pydantic models; grows per phase |
+| `backend/app/schemas.py` | T | Pydantic models; grows per phase |
 | `backend/app/auth.py` | T | argon2, `create_session`, `current_user`, `require_csrf` |
 | `backend/app/routers/auth.py` | T | register, login, logout, me |
 | `backend/app/main.py` | T | include router, call `init_db` |
 | `backend/tests/conftest.py` and the first two tests in `test_auth.py` | T | fixtures and TestClient are the concept |
-| rest of `backend/tests/test_auth.py` | D | |
+| rest of `backend/tests/test_auth.py` | T | |
 | `frontend/src/api/types.ts` | D | mirrors the contract |
 | `frontend/src/api/client.ts` (CSRF header, 422 field map) | T | small edit, one concept |
 | `frontend/src/api/auth.ts` | T | four short functions |
@@ -88,10 +88,10 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | File | Tier |
 | --- | --- |
 | `db.py` sites table | T |
-| `schemas.py` `SiteIn` / `SiteOut` | D |
+| `schemas.py` `SiteIn` / `SiteOut` | T |
 | `routers/sites.py`: `get_owned_site`, list, create, get | T |
-| `routers/sites.py`: put, delete | D |
-| `tests/test_sites.py` | D |
+| `routers/sites.py`: put, delete | T |
+| `tests/test_sites.py` | T |
 | `api/sites.ts` | D |
 | `components/PageHeader.tsx`, `ErrorBanner.tsx`, `EmptyState.tsx`, `Spinner.tsx` | D |
 | `pages/Sites.tsx` (list with loading, error, empty) | T, from an L4 outline |
@@ -103,8 +103,8 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | --- | --- |
 | `pvgis.py`: `fetch_pvcalc`, error mapping, `lru_cache`, mapping helper | T |
 | production route | T |
-| `schemas.py` production model | D |
-| `tests/fixtures/pvcalc.json` (fetched with curl), `tests/test_production.py` | D |
+| `schemas.py` production model | T |
+| `tests/fixtures/pvcalc.json` (fetched with curl), `tests/test_production.py` | T |
 | `api/sites.ts` `getProduction`, `components/MonthlyChart.tsx`, production section | D |
 
 **Phase 5, battery**
@@ -115,7 +115,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | `energy.py` `simulate` | T |
 | battery route with `Query` aliases | T |
 | `tests/test_energy.py` (24-hour hand-computed series, balance) | T |
-| `schemas.py` battery models | D |
+| `schemas.py` battery models | T |
 | battery form, gain tile, comparison table in `SiteDetail.tsx` | D |
 
 **Phase 6, hardening**
@@ -123,7 +123,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | Item | Tier |
 | --- | --- |
 | Security pass: `review` and `/security-review`; fixes applied in D files, explained for T files | mixed |
-| Test gaps against §0 | D |
+| Test gaps against §0 | T |
 | `README.md` body (run, stack, auth and CSRF, model, PVGIS, limits) from `backend-stack.md` and this plan | D, user edits the voice |
 | README AI-usage paragraph | T, user's words |
 | `.github/workflows/ci.yml` (docker build) | D, only if under ten minutes |
