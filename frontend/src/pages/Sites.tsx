@@ -44,11 +44,11 @@ export default function Sites(): ReactElement {
     content = (
       <EmptyState
         title="No sites yet"
-        message="Add a client site to see its solar production"
+        message="Add a client site to see its solar production."
         action={addSite}
       />
     );
-  } else
+  } else {
     content = (
       <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card">
         {state.sites.map((site) => (
@@ -58,7 +58,13 @@ export default function Sites(): ReactElement {
               className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
             >
               <div className="min-w-0">
-                <p className="shrink-0 text-right">{site.peakKwp} kWp</p>
+                <p className="truncate font-semibold">{site.clientName}</p>
+                <p className="truncate text-sm text-text-muted">
+                  {site.address}
+                </p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="font-semibold">{site.peakKwp} kWp</p>
                 <p className="text-sm text-text-muted">
                   {site.roofAreaM2 === null
                     ? "Roof area not set"
@@ -70,6 +76,7 @@ export default function Sites(): ReactElement {
         ))}
       </ul>
     );
+  }
 
   return (
     <div className="flex flex-col gap-6">
