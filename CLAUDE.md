@@ -261,8 +261,8 @@ docker build -t solar . && docker run --rm -p 8000:8000 solar
 - Routers orchestrate only: validate (Pydantic), authorise (dependencies), call a module, return a schema.
   Business logic lives in `pvgis.py` and `energy.py`; `energy.py` is pure (no I/O, no FastAPI imports);
   `pvgis.py` raises `HTTPException` directly (decision 35). Every route is a plain `def` (decision 34).
-- Errors: `HTTPException(status_code, detail)` for single messages; `RequestValidationError` handler for
-  `{"detail": "Validation failed", "errors": {field: message}}`. Status table: `docs/plan.md` §3.2.
+- Errors: `HTTPException(status_code, detail)` for single messages; validation errors keep FastAPI's default
+  422 body, with no custom handler (decision 10). Status table: `docs/plan.md` §3.2.
 - No bare `except:`; catch the specific exception. Never log passwords, hashes or tokens.
 - Timezone-aware datetimes only (`datetime.now(UTC)`, which ruff prefers over the identical `timezone.utc`), stored as ISO 8601 UTC text.
 - FastAPI parameters use `Annotated[type, Depends(...)]` / `Annotated[type, Header()]`; ruff's default rules reject `Depends(...)` as an argument default (B008).
@@ -364,12 +364,13 @@ shown, applied until the user says `change #n`), **done**.
 | 43  | 2026-10-16 | Task loop: one task at a time. For each task Claude gives a detailed step-by-step breakdown, ending with the exact git commands to commit it; the next task starts only after that commit | One finished, committed unit at a time keeps the branch green and every diff reviewable | decided |
 | 44  | 2026-10-16 | Every backend file is T tier: the user types all of `backend/` from snippets with line-by-line breakdowns and syntax notes; Claude writes no backend code. Breakdowns drop the JavaScript column; JS analogies only on request. Frontend D files stay available on an explicit `draft <file>`. Amends 27 and 41 | The user wants to understand everything that happens in the backend | decided |
 | 45  | 2026-10-16 | The CSRF token lives in one module variable in `src/api/client.ts`, set by `setCsrfToken()` from the functions in `src/api/auth.ts` (register, login, getMe set it; logout clears it). `request()` adds `X-CSRF-Token` to every non-GET call when a token is known. `AuthContext` holds only `status` and `email`, not the token | One owner for the token, next to the only code that sends it; components never handle it. Still memory-only, so decision 11 holds | default |
+| 46  | 2026-10-16 | Page data state is a discriminated union per page (`{ status: "loading" } \| { status: "error"; message } \| { status: "success"; ... }`) held in one `useState`, set once per transition; applies to the sites list and every later page that loads data. Fetching stays in `useEffect` (16 still rules out TanStack Query); effects that depend on a route param ignore stale responses with a cleanup flag | Impossible states (data and error both set) cannot be represented and TypeScript narrows on `status`; the user prefers it for clarity when presenting the code | decided |
 
 ## 10. Open questions
 
 None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the amended rows 10, 13, 14,
 18, 24 and 26. The design direction and the map question of 2026-10-15 are resolved in decisions 38 and 39.
-The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 45.
+The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 46.
 Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
 
 ## 11. Pointers

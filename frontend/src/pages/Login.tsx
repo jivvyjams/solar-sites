@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/useAuth";
 import Button from "../components/Button";
+import ErrorBanner from "../components/ErrorBanner";
 import Field from "../components/Field";
 
 export default function Login(): ReactElement {
@@ -38,14 +39,7 @@ export default function Login(): ReactElement {
       <div className="w-full max-w-sm flex flex-col gap-6 bg-surface rounded-card shadow-card p-8">
         <h1 className="font-display text-3xl">Log in</h1>
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-control bg-danger-soft px-3 py-2 text-sm text-danger"
-          >
-            {error.message}
-          </p>
-        )}
+        {error && <ErrorBanner message={error.message} />}
 
         <form
           onSubmit={handleSubmit}
