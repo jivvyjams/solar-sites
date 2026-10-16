@@ -5,11 +5,12 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.db import init_db
-from app.routers import auth, health
+from app.routers import auth, health, sites
 
 app = FastAPI()
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(sites.router)
 
 init_db()
 
