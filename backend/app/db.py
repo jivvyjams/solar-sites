@@ -15,7 +15,18 @@ CREATE TABLE IF NOT EXISTS sessions (
     csrf_token TEXT NOT NULL,
     user_id TEXT NOT NULL REFERENCES users(id),
     created_at TEXT NOT NULL
+)
+CREATE TABLE IF NOT EXISTS sites (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    client_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    roof_area_m2 REAL,
+    peak_kwp REAL NOT NULL
 );
+CREATE INDEX IF NOT EXISTS sites_user_id ON sites (user_id);
 """
 
 
