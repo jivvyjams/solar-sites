@@ -20,7 +20,7 @@ class SiteIn(CamelModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     client_name: str = Field(min_length=1, max_length=200)
-    address: str = Field(min_lenght=1, max_length=500)
+    address: str = Field(min_length=1, max_length=500)
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     roof_area_m2: float | None = Field(default=None, gt=0)
