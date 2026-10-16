@@ -4,10 +4,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.db import init_db
 from app.routers import health
 
 app = FastAPI()
 app.include_router(health.router)
+
+init_db()
 
 STATIC_DIR = Path("static")
 
