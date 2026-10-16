@@ -264,7 +264,8 @@ docker build -t solar . && docker run --rm -p 8000:8000 solar
 - Errors: `HTTPException(status_code, detail)` for single messages; `RequestValidationError` handler for
   `{"detail": "Validation failed", "errors": {field: message}}`. Status table: `docs/plan.md` §3.2.
 - No bare `except:`; catch the specific exception. Never log passwords, hashes or tokens.
-- Timezone-aware datetimes only (`datetime.now(timezone.utc)`), stored as ISO 8601 UTC text.
+- Timezone-aware datetimes only (`datetime.now(UTC)`, which ruff prefers over the identical `timezone.utc`), stored as ISO 8601 UTC text.
+- FastAPI parameters use `Annotated[type, Depends(...)]` / `Annotated[type, Header()]`; ruff's default rules reject `Depends(...)` as an argument default (B008).
 - SQL: `?` placeholders only; `row_factory = sqlite3.Row`; `PRAGMA foreign_keys = ON` on every connection; one connection per request, closed in a `finally`; commit explicitly after writes.
 
 ### TypeScript / React

@@ -183,7 +183,7 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
 | ------------------------------------ | ------------------------------------------------------------------- |
 | `secrets.token_urlsafe(32)`          | session token and CSRF token (cryptographically random, URL-safe)   |
 | `hmac.compare_digest(a, b)`          | constant-time comparison of the CSRF header with the stored token   |
-| `datetime`, `timezone.utc`           | session `created_at` / `expires_at`; always timezone-aware           |
+| `datetime`, `UTC`                    | session `created_at` (expiry is `created_at` + 7 days); always timezone-aware |
 | `pathlib.Path`                       | locating `static/index.html` relative to the module                  |
 | `os.environ.get`                     | optional config (database path) with defaults so Docker needs no env |
 | `logging`                            | log PVGIS failures; never log passwords, hashes or tokens            |
