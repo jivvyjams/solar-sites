@@ -221,8 +221,8 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 **Frontend**
 
 1. `src/api/auth.ts`: `register`, `login`, `logout`, `me`.
-2. `AuthContext` and `useAuth()`: `{ status: 'loading' | 'anon' | 'authed', email, csrfToken, login(), register(), logout() }`. On mount, call `/api/me` to restore the session after a refresh.
-3. `client.ts`: attach `X-CSRF-Token` on non-GET requests when a token is known.
+2. `AuthContext` and `useAuth()`: `{ status: 'loading' | 'anon' | 'authed', email, login(), register(), logout() }`. On mount, call `/api/me` to restore the session after a refresh. The CSRF token is not in context (decision 45).
+3. `client.ts`: holds the CSRF token (`setCsrfToken`), attaches `X-CSRF-Token` on non-GET requests when a token is known, and maps a 422 list to `fieldErrors` by the last `loc` item.
 4. Pages: `/login`, `/register` (controlled inputs, server message shown), `/` redirects based on auth status. A `RequireAuth` layout route (`Outlet` or `Navigate`) wraps every protected route.
 5. Nav bar with the email and a logout button.
 

@@ -363,12 +363,13 @@ shown, applied until the user says `change #n`), **done**.
 | 42  | 2026-10-16 | Cut list applied (`docs/plan.md` §5): security-headers middleware dropped; design polish one hour instead of two; CI only if the workflow is drafted in under ten minutes; map unchanged (39) | Must-haves first; every item was already on the cut list | decided |
 | 43  | 2026-10-16 | Task loop: one task at a time. For each task Claude gives a detailed step-by-step breakdown, ending with the exact git commands to commit it; the next task starts only after that commit | One finished, committed unit at a time keeps the branch green and every diff reviewable | decided |
 | 44  | 2026-10-16 | Every backend file is T tier: the user types all of `backend/` from snippets with line-by-line breakdowns and syntax notes; Claude writes no backend code. Breakdowns drop the JavaScript column; JS analogies only on request. Frontend D files stay available on an explicit `draft <file>`. Amends 27 and 41 | The user wants to understand everything that happens in the backend | decided |
+| 45  | 2026-10-16 | The CSRF token lives in one module variable in `src/api/client.ts`, set by `setCsrfToken()` from the functions in `src/api/auth.ts` (register, login, getMe set it; logout clears it). `request()` adds `X-CSRF-Token` to every non-GET call when a token is known. `AuthContext` holds only `status` and `email`, not the token | One owner for the token, next to the only code that sends it; components never handle it. Still memory-only, so decision 11 holds | default |
 
 ## 10. Open questions
 
 None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the amended rows 10, 13, 14,
 18, 24 and 26. The design direction and the map question of 2026-10-15 are resolved in decisions 38 and 39.
-The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 44.
+The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 45.
 Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
 
 ## 11. Pointers
