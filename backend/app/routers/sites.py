@@ -98,7 +98,7 @@ def update_site(
     return SiteOut(id=str(site_id), **site.model_dump())
 
 
-@router.delete("/{site_id}")
+@router.delete("/{site_id}", status_code=204)
 def delete_site(
     site_id: uuid.UUID,
     user: Annotated[sqlite3.Row, Depends(require_csrf)],
