@@ -69,3 +69,44 @@ def get_site(
 ) -> SiteOut:
     site = get_owned_site(site_id, user, db)
     return SiteOut.model_validate(dict(site))
+
+
+@router.put("/{site_id}")
+def update_site(
+    site_id: uuid.UUID,
+    site: SiteIn,
+    user: Annotated[sqlite3.Row, Depends(require_csrf)],
+    db: Annotated[sqlite3.Connection, Depends(get_db)],
+) -> SiteOut:
+    get_owned_site(site_id, user, db)
+    db.execute(
+        "UPDATE sites SET client_name = ?, address = ?, latitude = ?, "
+        "longitude = ?, roof_area_m2 = ?, peak_kwp = ? "
+        "WHERE id = ? AND user_id = ?",
+        (
+            site.client_name,
+            site.address,
+            site.latitude,
+            site.longitude,
+            site.roof_area_m2,
+            site.peak_kwp,
+            str(site_id),
+            user["id"],
+        ),
+    )
+    db.commit()
+    return SiteOut(id=str(site_id), **site.model_dump())
+
+
+@router.delete("/{site_id}")
+def delete_site(
+    site_id: uuid.UUID,
+    user: Annotated[sqlite3.Row, Depends(require_csrf)],
+    db: Annotated[sqlite3.Connection, Depends(get_db)],
+) -> None:
+    get_owned_site(site_id, user, db)
+    db.execute(
+        "DELETE FROM sites WHERE id = ? AND user_id = ?",
+        (str(site_id), user["id"]),
+    )
+    db.commit()
