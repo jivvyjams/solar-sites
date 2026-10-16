@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
+import { Route, Routes } from "react-router";
 import { request } from "./api/client";
 import Button from "./components/Button";
 import Field from "./components/Field";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 type HealthResponse = {
   status: string;
@@ -35,7 +38,7 @@ function Scratch() {
   );
 }
 
-export default function App() {
+function Home() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,5 +65,15 @@ export default function App() {
       <Scratch />
       <p>{status}</p>
     </>
+  );
+}
+
+export default function App(): ReactElement {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+    </Routes>
   );
 }
