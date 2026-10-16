@@ -70,8 +70,8 @@ Rules:
 - Stage deliberately: `git add -p` to pick hunks, `git status` and `git diff --staged` before every commit.
 - Never commit `node_modules/`, `.venv/`, `dist/`, `*.db`, `.env*`, `__pycache__/`. The root `.gitignore`
   must cover them before the first commit.
-- Commit messages end with `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` only when Claude
-  wrote content in that commit (docs). Code commits are yours alone, which is true, so say so.
+- No co-author trailers (decided 16 Oct). The README's AI-usage paragraph is the record of how AI was
+  used; the tier table in `docs/plan.md` §2 says which files were typed and which were drafted.
 
 ## 4. Pull requests: one per slice, self-reviewed
 
@@ -115,8 +115,8 @@ unfinished UI rather than letting the branch drift.
    `concept GitHub Actions` before writing it: a workflow is YAML that names a trigger (`on`), jobs, a
    runner image, and steps that are shell commands or reusable actions.
 4. `CLAUDE.md` and `docs/` stay in the repository (decided). The brief allows AI tools and asks you to
-   explain every line. A visible working agreement that records Claude never wrote application code, plus an
-   AI-usage paragraph in the README, is transparency that works in your favour.
+   explain every line. A visible working agreement that records which files were typed and which were
+   drafted, plus an AI-usage paragraph in the README, is the transparency the brief asks for.
 
 ## 6. Day 0 cleanup (run once, phase 0)
 

@@ -1,7 +1,7 @@
 # Solar Sites: build plan
 
-- **Deadline:** Monday 19 October 2026 at 12:00. Today is Wednesday 14 October 2026.
-  Working time: Wed evening, Thu, Fri, Sat, Sun (eight to ten hours a day with breaks); Monday morning is buffer only.
+- **Deadline:** Monday 19 October 2026 at 12:00. Plan written Wednesday 14 October, timeline and tiers revised Friday 16 October.
+  Working time: Fri, Sat, Sun (eight to ten hours a day with breaks); Monday morning is buffer only.
 - **Authority:** [projet-brief.md](projet-brief.md) is the spec. This plan is how to satisfy it in time.
 - **Rules of engagement:** [CLAUDE.md](../CLAUDE.md). Stack rationale: [backend-stack.md](backend-stack.md).
   Git: [git-workflow.md](git-workflow.md). Python syntax: [python-for-js-devs.md](python-for-js-devs.md).
@@ -14,7 +14,7 @@
 
 - [ ] `docker build -t solar .` then `docker run -p 8000:8000 solar` serves the app on http://localhost:8000 from a clean clone.
 - [ ] All eleven contract routes exist with the exact paths, camelCase field names, and the status codes in §3.2.
-- [ ] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
+- [x] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
 - [ ] Sites CRUD is scoped to the caller. Another user's site id returns 404.
 - [ ] POST/PUT /api/sites return a message per invalid field.
 - [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
@@ -26,7 +26,7 @@
 
 - [ ] Monthly bar chart on the site page; battery comparison with "the battery adds X kWh".
 - [ ] `@lru_cache` on the two PVGIS fetch functions.
-- [ ] Session expiry (7 days) enforced.
+- [x] Session expiry (7 days) enforced.
 - [ ] GitHub Actions: one job running `docker build` on every push (optional, phase 6).
 
 **Won't (say so in the README)**
@@ -37,27 +37,98 @@
 
 | Phase | Target                   | Outcome                                                                                 | Branch               |
 | ----- | ------------------------ | --------------------------------------------------------------------------------------- | -------------------- |
-| 0     | Wed 14 Oct, evening      | Clean repo, both toolchains run, working agreement committed                            | `main` (direct)      |
-| 1     | Thu 15 Oct, morning      | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on | `chore/skeleton`     |
-| 1b    | Thu 15 Oct, evening      | Design tokens plus `Button` and `Field`, one-hour timebox                               | `feat/design-system` |
-| 2     | Thu 15 PM → Fri 16 AM    | register/login/logout/me with CSRF; login/register pages; route guard                   | `feat/auth`          |
-| 3     | Fri 16 Oct               | Five site routes with ownership and validation; list/form/detail pages                  | `feat/sites`         |
-| 4     | Sat 17 Oct, morning      | PVGIS PVcalc → production endpoint + monthly chart                                      | `feat/production`    |
-| 5     | Sat 17 PM → Sun 18 AM    | seriescalc + energy simulation → battery endpoint + calculator UI                       | `feat/battery`       |
-| 6     | Sun 18 Oct               | Tests complete, security pass, README, clean-clone Docker test                          | `chore/hardening`    |
-| 7     | Mon 19 Oct, before 12:00 | Final review, quiz, tag `v1.0.0`, submit the link                                       | `main`               |
+| 0     | Wed 14 Oct (done)        | Clean repo, both toolchains run, working agreement committed                            | `main` (direct)      |
+| 1     | Thu 15 Oct (done)        | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on | `chore/skeleton`     |
+| 1b    | Thu 15 Oct (done)        | Design tokens plus `Button` and `Field`, one-hour timebox                               | `feat/design-system` |
+| 2     | Fri 16 Oct               | register/login/logout/me with CSRF; login/register pages; route guard; first tests      | `feat/auth`          |
+| 3     | Sat 17 Oct, morning      | Five site routes with ownership and validation; list/form/detail pages                  | `feat/sites`         |
+| 4     | Sat 17 Oct, afternoon    | PVGIS PVcalc → production endpoint + monthly chart                                      | `feat/production`    |
+| 5     | Sun 18 Oct, morning      | seriescalc + energy simulation → battery endpoint + calculator UI                       | `feat/battery`       |
+| 6     | Sun 18 Oct, afternoon    | Tests complete, security pass, README, clean-clone Docker test                          | `chore/hardening`    |
+| 7     | Mon 19 Oct, before 12:00 | Rehearsal `quiz` on every phase, final review, tag `v1.0.0`, submit the link            | `main`               |
 
-Monday morning is the only slack. If a phase slips by more than half a day, apply the cut list in §5.
-Targets assume eight to ten focused hours per day with breaks (confirmed 14 Oct).
+Day targets (set 16 Oct): phase 2 merged Friday night (backend by 13:00, frontend by 18:00, tests and review in
+the evening); phases 3 and 4 merged Saturday night; phases 5 and 6 merged Sunday night. Monday morning is the
+only slack. If a phase slips by more than half a day, apply the cut list in §5.
 
 ## 2. Phases
 
-Every phase runs the same loop:
+Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D = drafted by Claude; every backend file is T, decision 44):
 
-1. Ask Claude `brief phase N`. You get: concepts to learn, API shapes in words, files to create, acceptance checks, tests to write. Read the linked docs.
-2. Backend first (exercise it in `/docs`), then frontend, then end to end in the browser.
-3. Ask `review`. Fix findings you understand. Tests green. Commit. Open the PR. Merge. Tick the boxes in §7.
-4. Ask `quiz` on the phase while it is fresh.
+1. Ask Claude `brief phase N`. You get the tier table below in build order, the concepts to learn, API shapes in words, acceptance checks and tests.
+2. Backend T files first: `snippet <file>` gives the project-specific code chunk by chunk with a breakdown table; type it in; exercise it in `/docs`. Then the frontend, then end to end in the browser.
+3. D files: `draft <file>`, read the diff, then `walkthrough <file>` and answer the three questions before the file goes into a commit.
+4. Ask `review`. Fix findings you understand (Claude applies them in D files). Tests green. Commit. Open the PR. Merge. Tick the boxes in §7.
+5. Ask `quiz` at the end of the day, three questions per phase.
+
+### Tiers per phase (set 16 Oct, decision 41)
+
+**Phase 2, auth**
+
+| File | Tier | Note |
+| --- | --- | --- |
+| `backend/app/db.py` | T | `connect`, `init_db`, `get_db`; new: `sqlite3`, `yield` dependency |
+| `backend/app/schemas.py` | T | Pydantic models; grows per phase |
+| `backend/app/auth.py` | T | argon2, `create_session`, `current_user`, `require_csrf` |
+| `backend/app/routers/auth.py` | T | register, login, logout, me |
+| `backend/app/main.py` | T | include router, call `init_db` |
+| `backend/tests/conftest.py` and the first two tests in `test_auth.py` | T | fixtures and TestClient are the concept |
+| rest of `backend/tests/test_auth.py` | T | |
+| `frontend/src/api/types.ts` | D | mirrors the contract |
+| `frontend/src/api/client.ts` (CSRF header, 422 field map) | T | small edit, one concept |
+| `frontend/src/api/auth.ts` | T | four short functions |
+| `frontend/src/auth/AuthContext.tsx` | T | React context |
+| `frontend/src/pages/Login.tsx` | T | first form page sets the pattern |
+| `frontend/src/pages/Register.tsx` | D | second instance |
+| `RequireAuth` and the route table in `App.tsx` / `main.tsx` | T | Router 7 layout routes |
+| `frontend/src/components/NavBar.tsx` | D | |
+
+**Phase 3, sites**
+
+| File | Tier |
+| --- | --- |
+| `db.py` sites table | T |
+| `schemas.py` `SiteIn` / `SiteOut` | T |
+| `routers/sites.py`: `get_owned_site`, list, create, get | T |
+| `routers/sites.py`: put, delete | T |
+| `tests/test_sites.py` | T |
+| `api/sites.ts` | D |
+| `components/PageHeader.tsx`, `ErrorBanner.tsx`, `EmptyState.tsx`, `Spinner.tsx` | D |
+| `pages/Sites.tsx` (list with loading, error, empty) | T, from an L4 outline |
+| `pages/SiteForm.tsx`, `pages/SiteDetail.tsx` | D |
+
+**Phase 4, production**
+
+| File | Tier |
+| --- | --- |
+| `pvgis.py`: `fetch_pvcalc`, error mapping, `lru_cache`, mapping helper | T |
+| production route | T |
+| `schemas.py` production model | T |
+| `tests/fixtures/pvcalc.json` (fetched with curl), `tests/test_production.py` | T |
+| `api/sites.ts` `getProduction`, `components/MonthlyChart.tsx`, production section | D |
+
+**Phase 5, battery**
+
+| File | Tier |
+| --- | --- |
+| `pvgis.py` `fetch_hourly` | T |
+| `energy.py` `simulate` | T |
+| battery route with `Query` aliases | T |
+| `tests/test_energy.py` (24-hour hand-computed series, balance) | T |
+| `schemas.py` battery models | T |
+| battery form, gain tile, comparison table in `SiteDetail.tsx` | D |
+
+**Phase 6, hardening**
+
+| Item | Tier |
+| --- | --- |
+| Security pass: `review` and `/security-review`; fixes applied in D files, explained for T files | mixed |
+| Test gaps against §0 | T |
+| `README.md` body (run, stack, auth and CSRF, model, PVGIS, limits) from `backend-stack.md` and this plan | D, user edits the voice |
+| README AI-usage paragraph | T, user's words |
+| `.github/workflows/ci.yml` (docker build) | D, only if under ten minutes |
+| Clean-clone Docker test | user runs |
+| Design polish, one hour | D, user reviews visually |
 
 ### Phase 0: Reset and setup (Wed 14 Oct)
 
@@ -134,7 +205,7 @@ Every phase runs the same loop:
 **Learn first:** Tailwind 4 `@theme` and CSS-first configuration; `focus-visible`.
 **Interview angles:** why tokens as CSS variables; why one hour was enough; why the button blue is Praeter's darker step (AA contrast).
 
-### Phase 2: Authentication (Thu 15 PM → Fri 16 AM)
+### Phase 2: Authentication (Fri 16 Oct)
 
 **Goal.** Accounts and sessions exactly per contract, safe by construction.
 
@@ -150,8 +221,8 @@ Every phase runs the same loop:
 **Frontend**
 
 1. `src/api/auth.ts`: `register`, `login`, `logout`, `me`.
-2. `AuthContext` and `useAuth()`: `{ status: 'loading' | 'anon' | 'authed', email, csrfToken, login(), register(), logout() }`. On mount, call `/api/me` to restore the session after a refresh.
-3. `client.ts`: attach `X-CSRF-Token` on non-GET requests when a token is known.
+2. `AuthContext` and `useAuth()`: `{ status: 'loading' | 'anon' | 'authed', email, login(), register(), logout() }`. On mount, call `/api/me` to restore the session after a refresh. The CSRF token is not in context (decision 45).
+3. `client.ts`: holds the CSRF token (`setCsrfToken`), attaches `X-CSRF-Token` on non-GET requests when a token is known, and maps a 422 list to `fieldErrors` by the last `loc` item.
 4. Pages: `/login`, `/register` (controlled inputs, server message shown), `/` redirects based on auth status. A `RequireAuth` layout route (`Outlet` or `Navigate`) wraps every protected route.
 5. Nav bar with the email and a logout button.
 
@@ -161,14 +232,14 @@ Every phase runs the same loop:
 
 **Acceptance**
 
-- [ ] Full flow in the browser. Refresh keeps you logged in. After logout the back button cannot reach protected data.
-- [ ] DevTools shows the cookie with HttpOnly and SameSite=Lax.
-- [ ] `pytest` green.
+- [x] Full flow in the browser. Refresh keeps you logged in. After logout the back button cannot reach protected data.
+- [x] DevTools shows the cookie with HttpOnly and SameSite=Lax.
+- [x] `pytest` green.
 
 **Learn first:** password hashing (Argon2id, salt, verify); server-side sessions versus JWT; cookie attributes; what CSRF is and why SameSite=Lax alone is not the whole answer; FastAPI `Depends`, `Response.set_cookie`, `Request.cookies`; the stdlib `sqlite3` module (connections, cursors, `?` placeholders, `commit`, `row_factory`), `SELECT ... WHERE`, unique constraints and `sqlite3.IntegrityError`; React context with a provider; React Router 7 layout routes, `Navigate`, `Outlet`.
 **Interview angles:** 401 versus 403; one error message for unknown email and wrong password; why the CSRF token is returned in JSON rather than a readable cookie; why HttpOnly; why not localStorage; a fresh token on every login (session fixation).
 
-### Phase 3: Sites CRUD with ownership (Fri 16 Oct)
+### Phase 3: Sites CRUD with ownership (Sat 17 Oct, morning)
 
 **Goal.** The five site routes, every query scoped to the caller, per-field validation.
 
@@ -197,7 +268,7 @@ Every phase runs the same loop:
 **Learn first:** the `uuid` module; SQL `INSERT`, `SELECT`, `UPDATE` and `DELETE` with `?` placeholders, `commit` and `rollback`, `cursor.rowcount`; foreign keys; why ownership is a `WHERE` clause and not a check after fetching; PUT semantics (full replacement); mass assignment; Pydantic aliases and `Field` constraints; custom exception handlers; React controlled forms with number inputs, `useParams`, `useNavigate`.
 **Interview angles:** 404 versus 403 for someone else's site; UUIDs are not authorisation on their own, so ownership stays a WHERE clause; where validation lives (both sides, server authoritative).
 
-### Phase 4: Production via PVGIS (Sat 17 Oct, morning)
+### Phase 4: Production via PVGIS (Sat 17 Oct, afternoon)
 
 **Goal.** `GET /api/sites/{id}/production` returns `{yearlyKwh, monthlyKwh: [{month, kwh}] × 12}` with clear failures.
 
@@ -224,7 +295,7 @@ Every phase runs the same loop:
 **Learn first:** `httpx.get` with `params` and `timeout`; `response.status_code` and `response.json()`; `httpx.HTTPError`; raising `HTTPException` from a helper; `@lru_cache`; `monkeypatch` in pytest.
 **Interview angles:** why the backend proxies PVGIS; 502 versus 422; why a plain `def` route is fine for a slow call (thread pool); what `lru_cache` does and does not cache.
 
-### Phase 5: Battery and self-consumption (Sat 17 PM → Sun 18 AM)
+### Phase 5: Battery and self-consumption (Sun 18 Oct, morning)
 
 **Goal.** `GET /api/sites/{id}/battery?capacityKwh=&annualUseKwh=` returns the §3.5 shape using the documented consumption model.
 
@@ -251,15 +322,15 @@ Every phase runs the same loop:
 **Learn first:** time-series simulation and state of charge; floating point rounding; keeping pure functions apart from I/O; FastAPI `Query` validation; nested Pydantic response models.
 **Interview angles:** why a flat profile and what it ignores (daily shape, seasons, time zone, battery power limits, degradation); where the efficiency loss is applied and why.
 
-### Phase 6: Hardening, tests, README (Sun 18 Oct)
+### Phase 6: Hardening, tests, README (Sun 18 Oct, afternoon)
 
 1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why.
 2. Tests: close the gaps against §0. `pytest -q` green. `ruff check .` and `ruff format --check .` clean. `npm run lint` and `npm run build` clean.
 3. Session expiry enforced, expired rows deleted on login (if not done in phase 2).
 4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement.
 5. Clean-clone test: `git clone` into a temp dir, `docker build`, `docker run`, walk the manual script in §6 with two users in private windows.
-6. CI: add the pytest and npm build jobs to the workflow. Optional: security headers middleware (`X-Content-Type-Options: nosniff`, `Referrer-Policy`, a basic CSP).
-7. Design polish pass, two-hour timebox: spacing consistency, every state on every page, the chart, the battery comparison, empty states. Candidates noted 15 Oct: a 1px card border like praeter.energy, hover transitions on cards and buttons (`transition-shadow`, `transition-colors`). Stop when the timer ends.
+6. CI: one `docker build` job, drafted only if it takes under ten minutes (decision 42). Security headers middleware: cut (decision 42).
+7. Design polish pass, one-hour timebox (decision 42): spacing consistency, every state on every page, the chart, the battery comparison, empty states. Candidates noted 15 Oct: a 1px card border like praeter.energy, hover transitions on cards and buttons (`transition-shadow`, `transition-colors`). Stop when the timer ends.
 
 ### Phase 7: Hand-in (Mon 19 Oct, before 12:00)
 
@@ -274,9 +345,9 @@ Every phase runs the same loop:
 
 | Table      | Columns                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null; `created_at` datetime                                                                        |
-| `sessions` | `id` UUID PK; `token` text unique not null (indexed); `csrf_token` text not null; `user_id` FK users.id; `created_at`; `expires_at`                                                         |
-| `sites`    | `id` UUID PK; `user_id` FK users.id (indexed); `client_name` text; `address` text; `latitude` real; `longitude` real; `roof_area_m2` real null; `peak_kwp` real; `created_at`; `updated_at` |
+| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null |
+| `sessions` | `token` text PK; `csrf_token` text not null; `user_id` FK users.id; `created_at` (UTC ISO text; expiry is `created_at` + 7 days, decision 20) |
+| `sites`    | `id` UUID PK; `user_id` FK users.id (indexed); `client_name` text; `address` text; `latitude` real; `longitude` real; `roof_area_m2` real null; `peak_kwp` real |
 
 Python attribute names are snake_case; JSON field names are camelCase through Pydantic aliases. Never expose `password_hash`, `token`, `csrf_token` of other sessions, or `user_id`.
 
@@ -429,9 +500,9 @@ Everything not in this table is inline utility classes on the page; extract a co
 
 Cut list (cut from the bottom first; everything above the line stays):
 
-1. CI (optional already)
-2. Security headers middleware
-3. Design polish pass (tokens, `Button` and `Field` stay)
+1. CI (optional already; drafted only if under ten minutes, decision 42)
+2. Security headers middleware (cut 16 Oct, decision 42)
+3. Design polish pass (one hour since 16 Oct; tokens, `Button` and `Field` stay)
 4. Chart becomes a table
 5. `@lru_cache` on the PVGIS calls (call PVGIS every time; slower but correct)
 
@@ -453,9 +524,9 @@ Stretch (decision 39; only when phase 6 is merged and green, Sunday evening at t
 ## 7. Progress
 
 - [x] Phase 0 merged
-- [ ] Phase 1 merged
-- [ ] Phase 1b merged
-- [ ] Phase 2 merged
+- [x] Phase 1 merged
+- [x] Phase 1b merged
+- [x] Phase 2 merged
 - [ ] Phase 3 merged
 - [ ] Phase 4 merged
 - [ ] Phase 5 merged

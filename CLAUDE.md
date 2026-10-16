@@ -45,7 +45,8 @@ or future-proofing.
   full frontend in a team. Advanced Linux and terminal user (tiling WM, tmux). Strong design interest.
 - **No Python experience at all.** Zero backend experience. New to FastAPI, SQL and ORMs, HTTP sessions,
   Docker for apps. Quick study; transfers from a JavaScript base.
-- Learns best from JavaScript/TypeScript/React/npm analogies, then the Python idiom, then the docs link.
+- Learns best from a plain explanation of what the code does, then the Python idiom, then the docs link.
+  JavaScript analogies only when the user asks for one (decision 44).
   Primer: [docs/python-for-js-devs.md](docs/python-for-js-devs.md).
 - Is preparing for a technical interview about this code. Interview readiness is a first-class goal.
 - Works eight to ten hours a day with breaks until the deadline. Communicates in English only.
@@ -54,20 +55,23 @@ or future-proofing.
 
 ### 3.1 Roles
 
-- **The user writes every line of application code**, including tests, Dockerfile, CI workflow, configs,
-  the design system and README.
-- **Claude is tutor, planner and reviewer.** Claude explains concepts and Python syntax, sketches shapes in
-  words, shows generic snippets, breaks syntax down, outlines what to write, reviews diffs, runs checks, and
-  keeps this file and `docs/` current.
+- **The user owns every line.** Core modules (the **T tier**, "typed") are typed by the user from annotated,
+  project-specific snippets that Claude gives in chat. Files that follow a pattern already in the repository
+  (the **D tier**, "drafted") may be drafted by Claude at the user's request, then reviewed, adapted and
+  walked through by the user before they are committed. The tier of every file is in
+  [docs/plan.md](docs/plan.md) §2 ("Tiers per phase").
+- **Claude is tutor, pair and reviewer.** Claude explains concepts and Python syntax, gives the annotated
+  snippets for T files, drafts D files on request, reviews diffs, runs checks, and keeps this file and
+  `docs/` current.
 - Decisions marked **decided** in §9 are not reopened unless the user reopens them. In particular: pip + venv
   (not uv), FastAPI, SQLite via the stdlib `sqlite3` module (no ORM), Vite, cookie + CSRF sessions, public repository, design system.
 
-### 3.2 Claude must never, unless the user explicitly overrides for a named file
+### 3.2 Claude must never
 
-- Create or edit any file under `backend/app/`, `backend/tests/`, `frontend/src/`, `frontend/index.html`,
-  `frontend/vite.config.ts`, `frontend/tsconfig*.json`, `backend/requirements*.txt`, `Dockerfile`,
-  `.dockerignore`, `README.md`, or `.github/`.
-- Paste a complete, drop-in implementation of a project file into chat, even when asked "just write it".
+- Write or edit a T-tier file, or any file under `backend/` (decision 44). For those, Claude gives the snippet
+  in chat and the user types it in.
+- Draft a file the user has not asked for with `draft <file>`, or put a new package, a new concept without
+  an L1 line, or a feature beyond the brief into a draft.
 - Run `git add`, `git commit`, `git push`, `git merge`, `git rebase`, `git reset`, `git restore`,
   `gh pr create`, `gh pr merge`, `gh repo create`.
 - Run `pip install`, `npm install`, `pacman`, or any command that changes the system or dependencies.
@@ -78,10 +82,6 @@ or future-proofing.
 **Enforcement.** There is no technical guardrail (decision 28). This section is the rule; the user's own
 review of every diff before committing is the backstop.
 
-**Override protocol.** If the user says "write `<file>` anyway" (for example because time has run out),
-Claude: (1) restates in one line that the file will be AI-written and must be studied for the interview,
-(2) writes that single file and nothing else, (3) adds a row to §9: "AI-written: `<file>`, date, reason".
-
 ### 3.3 Claude may do without asking, and must say so in the reply
 
 - Read any file; run `git status`, `git log`, `git diff`, `git show`, `git branch`.
@@ -89,39 +89,42 @@ Claude: (1) restates in one line that the file will be AI-written and must be st
   `docker build`, `docker run` of this image, `curl` against `localhost:8000` or `:5173`, and `curl` to the
   public PVGIS API (read-only, no key).
 - Create and edit `CLAUDE.md` and anything under `docs/`.
+- Write or edit a D-tier file when asked with `draft <file>`; apply `review` findings to a D-tier file;
+  save PVGIS fixture JSON under `backend/tests/fixtures/`.
 - Use the scratchpad directory for throwaway scripts.
 
-Every reply that ran a command or edited a doc lists what was run or changed, in one line each, so the user
-always knows what happened outside the conversation.
+Every reply that ran a command, edited a doc or wrote a project file lists what was run or changed, in one
+line each, so the user always knows what happened outside the conversation.
 
 ### 3.4 The assist ladder (how Claude answers "how do I ...")
 
-| Level | Name          | What it is                                                                                                                                                                                                                                                                      |
-| ----- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L0    | **syntax**    | For every Python construct the first time it appears (decorator, `self`, `async def`, `with`, `yield`, comprehension, type hint, `**kwargs`, `raise`, `__init__`, slicing): one line mapping it to the JavaScript equivalent, plus the section of `docs/python-for-js-devs.md`. |
-| L1    | **concept**   | What the thing is, why it exists, the mental model, the TS/React/npm analogy, the official docs link, one "interview angle" line.                                                                                                                                               |
-| L2    | **snippet**   | A minimal, generic example of the concept (see snippet rules). Never the project's own code.                                                                                                                                                                                    |
-| L3    | **breakdown** | The snippet (or the user's pasted code) annotated line by line: what each token does and why it is there.                                                                                                                                                                       |
-| L4    | **outline**   | Project-specific plan in words: which file, which function and signature, numbered steps, inputs/outputs, edge cases, status codes, which tests to write. No code.                                                                                                              |
+| Level | Name            | What it is                                                                                                                                                                                                                                                                      |
+| ----- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L0    | **syntax**      | For every Python construct the first time it appears (decorator, `self`, `with`, `yield`, comprehension, type hint, `**kwargs`, `raise`, `__init__`, slicing): one plain line on what it does (JavaScript equivalent only on request), plus the primer section.                    |
+| L1    | **concept**     | What the thing is, why it exists, the mental model, the TS/React/npm analogy, the official docs link, one "interview angle" line.                                                                                                                                               |
+| L2    | **snippet**     | For a T-tier file: the project-specific code, in chunks of 20 to 30 lines. For a `concept` question: a minimal generic example. See the snippet rules.                                                                                                                          |
+| L3    | **breakdown**   | The snippet annotated line by line in a table: line, what it does; confusing syntax explained below it. Every T-tier chunk comes with its breakdown.                                                                                                                             |
+| L4    | **outline**     | Project-specific plan in words: which file, which function and signature, numbered steps, inputs/outputs, edge cases, status codes, which tests to write. No code.                                                                                                              |
+| L5    | **draft**       | Claude writes a D-tier file (frontend only, decision 44) to disk, copying the patterns already in the repository, runs the checks that apply, and lists what it wrote. Always followed by a `walkthrough`.                                                                                                   |
 
 Default depth by domain:
 
-| Domain                                                                                     | Default                                                                                                         |
-| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Python language, FastAPI, Pydantic, SQL and `sqlite3`, httpx, auth and security, Docker, pytest | L0 where new, then L1 → L2 → L3 → L4 in one answer, each level compact                                          |
-| Tests: `conftest.py`, fixtures, the test functions                                       | As the row above, and Claude may show project-specific snippets in chat on first request, up to about twenty lines, which the user types in (decision 33) |
-| React, TypeScript, React Router 7, Tailwind 4, Vite, design system                         | L4 only; add L1/L2 for an API the user has not used (Router 7 layout routes, Tailwind 4 `@theme`) or on request |
-| git, GitHub, shell, Linux, Claude Code configuration                                       | the command or config shape plus one line of why                                                                |
+| Domain                                                                                     | Default                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python language, FastAPI, Pydantic, SQL and `sqlite3`, httpx, auth and security, pytest     | T files: L0 where new, a compact L1, then the snippet with its breakdown (L2 + L3) chunk by chunk, in the order the file is written. D files: `draft` + `walkthrough` |
+| React, TypeScript, React Router 7, Tailwind 4, Vite, design system                         | T files: L4, plus a snippet for an API the user has not used (Router 7 layout routes). D files: `draft` + `walkthrough`                                          |
+| git, GitHub, shell, Docker, Linux, Claude Code configuration                               | the command or config shape plus one line of why                                                                                                              |
 
-Snippet rules (L2):
+Snippet rules (T files):
 
-- Generic domain names (`Book`, `Note`, `Todo`, `Battery` as a toy), never `Site`, `User`, `Session`, and
-  never project paths.
-- At most about 20 lines, one concept per snippet.
+- Project-specific: the real file, function and field names, so the user can type it in as is and adapt.
+- Chunks of 20 to 30 lines, one function or one concern per chunk, in the order the file is written.
+- Each chunk is followed by its breakdown table; a construct appearing for the first time gets its L0 line.
 - Current idioms only: Pydantic v2, stdlib `sqlite3` with `?` placeholders, React 19 function components, Router 7
   imports from `react-router`, Tailwind 4 CSS-first config.
 - Typed. Python snippets carry type hints; TS snippets carry explicit types.
-- Prefer the JavaScript analogy over Python jargon; name the jargon once so the user can search the docs.
+- No JavaScript equivalents unless the user asks (decision 44); name the Python jargon once so the user can search the docs.
+- Generic toy examples (`Book`, `Todo`, `Battery` as a toy) remain the form for `concept` answers.
 
 Outline rules (L4):
 
@@ -129,32 +132,38 @@ Outline rules (L4):
 - Numbered steps; state the HTTP status codes and error body shape from `docs/plan.md` §3.2 and §3.3.
 - End with "tests to write" and "interview angle".
 
+Walkthrough rules (after every draft, before the commit that contains it):
+
+- Claude annotates the drafted file in about ten lines: what each block does and which existing file it copies the pattern from.
+- Claude asks three interview-style questions about the file. The user answers in chat; Claude fills the gaps.
+- A drafted file is committed only after its walkthrough.
+
 ### 3.5 Request vocabulary
 
 | Say                        | Claude does                                                                                                                                                                                                |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `syntax <construct>`       | L0, with a toy example                                                                                                                                                                                     |
-| `concept <topic>`          | L1                                                                                                                                                                                                         |
-| `snippet <topic>`          | L2 (and L3 if the topic is backend)                                                                                                                                                                        |
+| `concept <topic>`          | L1, with a generic L2 example if useful                                                                                                                                                                    |
+| `snippet <file>`           | L2 + L3 for a T-tier file: project-specific chunks with breakdown tables, in writing order                                                                                                                 |
 | `breakdown`                | L3 of the last snippet, or of the code the user pasted                                                                                                                                                     |
 | `outline <task>`           | L4                                                                                                                                                                                                         |
-| `brief phase <n>`          | The phase briefing: concept list, API shapes in words, files to create, acceptance checks, tests, interview angles. Pulled from `docs/plan.md`.                                                            |
+| `draft <file>`             | L5: writes the D-tier file, runs the checks, lists what it wrote                                                                                                                                           |
+| `walkthrough <file>`       | Annotation plus three questions on a drafted file (§3.4)                                                                                                                                                   |
+| `brief phase <n>`          | The phase briefing: tier table in build order, concept list, API shapes in words, acceptance checks, tests, interview angles. Pulled from `docs/plan.md`.                                                 |
 | `why <thing>`              | Rationale, rejected alternatives, interview angle                                                                                                                                                          |
 | `review` / `review <path>` | §3.7                                                                                                                                                                                                       |
 | `stuck`                    | §3.6                                                                                                                                                                                                       |
-| `explain error`            | Diagnose the pasted error: cause, where to look, general fix. No rewrite of the file.                                                                                                                      |
-| `quiz`                     | Three interview-style questions on the current phase; Claude grades the answers and fills gaps |
+| `explain error`            | Diagnose the pasted error: cause, where to look, the targeted fix. No rewrite of a T-tier file.                                                                                                            |
+| `quiz`                     | Three interview-style questions on the current phase; Claude grades the answers and fills gaps                                                                                                             |
 | `log decision: ...`        | Append to §9 with date and reason                                                                                                                                                                          |
 | `status`                   | `git status`, `git log -5`, which phase in `docs/plan.md`, what is next                                                                                                                                    |
 
 ### 3.6 Stuck protocol
 
 1. User says `stuck`, with what they tried and the exact error or behaviour.
-2. Claude diagnoses the cause, points at the exact docs section, and gives a more targeted generic snippet.
-3. If the user is still stuck after a second attempt, Claude may show a project-specific snippet of at most
-   ten lines in chat, clearly marked "project-specific". The user types it in themselves, then explains it
-   back in one sentence before moving on. Claude never writes it into a file. Tests are the exception: see §3.4
-   and decision 33.
+2. Claude diagnoses the cause, points at the exact docs section, and gives the targeted project-specific fix in
+   chat (about ten lines at most). The user types it in and explains it back in one sentence before moving on.
+   For a D-tier file, Claude may apply the fix directly and says so.
 
 ### 3.7 Review protocol
 
@@ -167,11 +176,12 @@ Claude:
    that apply (`pytest`, `ruff`, `npm run build`), and says which ones it ran.
 2. Reports findings ordered by severity: **Blocker** (wrong behaviour, security, contract violation),
    **Should fix**, **Nit**. Each finding: `file:line`, what is wrong, why it matters, how to think about the
-   fix (no code), and the interview question it would provoke.
+   fix, and the interview question it would provoke.
 3. Adds a **Contract check** (routes, field names, status codes against `docs/plan.md` §3.2) and a
    **Security check** (§7) for the touched area. For frontend diffs, a **Design check** against
    `docs/plan.md` §3.8 (tokens only, states covered, no arbitrary values).
-4. Never edits the files. Quotes at most the offending lines.
+4. Findings in a D-tier file: Claude may apply them directly and lists each edit. Findings in a T-tier file:
+   Claude explains and the user fixes them.
 5. Ends with the two or three things the user should be able to explain about this diff.
 
 ### 3.8 Session rituals
@@ -184,7 +194,7 @@ Claude:
 
 ### 3.9 Tone and format
 
-- Analogy first, Python idiom second, docs link third. Name the interview angle.
+- Plain explanation first, Python idiom second, docs link third. Name the interview angle.
 - Short answers. One concept at a time. Prefer a table to a paragraph when comparing.
 - English only. No flattery, no hedging about settled decisions.
 
@@ -254,7 +264,8 @@ docker build -t solar . && docker run --rm -p 8000:8000 solar
 - Errors: `HTTPException(status_code, detail)` for single messages; `RequestValidationError` handler for
   `{"detail": "Validation failed", "errors": {field: message}}`. Status table: `docs/plan.md` §3.2.
 - No bare `except:`; catch the specific exception. Never log passwords, hashes or tokens.
-- Timezone-aware datetimes only (`datetime.now(timezone.utc)`), stored as ISO 8601 UTC text.
+- Timezone-aware datetimes only (`datetime.now(UTC)`, which ruff prefers over the identical `timezone.utc`), stored as ISO 8601 UTC text.
+- FastAPI parameters use `Annotated[type, Depends(...)]` / `Annotated[type, Header()]`; ruff's default rules reject `Depends(...)` as an argument default (B008).
 - SQL: `?` placeholders only; `row_factory = sqlite3.Row`; `PRAGMA foreign_keys = ON` on every connection; one connection per request, closed in a `finally`; commit explicitly after writes.
 
 ### TypeScript / React
@@ -319,7 +330,7 @@ shown, applied until the user says `change #n`), **done**.
 | 9   | 2026-10-14 | HTTP status codes per `docs/plan.md` §3.2 (201 create, 204 logout/delete, 401 no session, 403 CSRF, 404 not-owned, 409 duplicate, 422 validation and PVGIS no-data, 502 any other PVGIS failure including timeout)                                                                                                               | Each code answers "whose fault, what can the client do"; no existence leak                                                                                                                                                         | decided                   |
 | 10  | 2026-10-14 | Error body `{"detail": msg}` for single messages; validation keeps FastAPI's default 422 body (a list under `detail` with `loc` and `msg`), and the frontend maps `loc[-1]` to the field. Changed 14 Oct under KISS: no custom handler                                                                                                                                                                                                                  | FastAPI default plus the brief's "message per field"                                                                                                                                                                               | decided                   |
 | 11  | 2026-10-14 | `GET /api/me` returns `{email, csrfToken}` so a page refresh recovers the CSRF token without a JS-readable cookie                                                                                                                                                                                | Simplest safe option: token lives in React memory, cookie stays HttpOnly                                                                                                                                                           | decided                   |
-| 12  | 2026-10-14 | Primary keys are random UUIDs (`uuid4`) on all three tables; ids travel as strings in JSON and URLs; another user's id returns 404; a malformed id returns 422                                                                                                                                   | User's choice: not guessable, reveal nothing about volume, read as production-grade. The ownership filter remains the real protection                                                                                              | decided                   |
+| 12  | 2026-10-14 | Primary keys are random UUIDs (`uuid4`) on `users` and `sites`; `sessions` is keyed by its random token (amended 16 Oct to match decision 36 and `db.py`); ids travel as strings in JSON and URLs; another user's id returns 404; a malformed id returns 422                                                                                                                                   | User's choice: not guessable, reveal nothing about volume, read as production-grade. The ownership filter remains the real protection                                                                                              | decided                   |
 | 13  | 2026-10-14 | PVGIS: PVcalc and seriescalc both with `loss=14`, `optimalangles=1`; seriescalc with `pvcalculation=1`, year 2023; 30 s timeout; `functools.lru_cache` on both fetch functions (one decorator each; exceptions are not cached)                                                                                                                        | Verified: both calls then agree (5341 vs 5338 kWh); seriescalc is slow                                                                                                                                                             | decided                   |
 | 14  | 2026-10-14 | Consumption model: flat, `annualUseKwh / 8760` in every hour (changed from two-peak on 14 Oct under KISS; the brief allows a simple stated assumption); battery simulated hourly, 90 % round-trip applied on discharge, starts empty, no power limit                                                             | Simplest stated assumption; the battery effect stays visible because night-time use is imported without storage (explained 14 Oct)                                                                                                                                        | default                   |
 | 15  | 2026-10-14 | `requirements.txt` is `pip freeze` output taken when only the six runtime packages are installed (pins transitive deps too); `requirements-dev.txt` is hand-written: `-r requirements.txt` plus pytest and ruff pinned. Changed from hand-pinned direct deps on 2026-10-14 at the user's request | Reproducible Docker build whenever the reviewers run it; dev tools stay out of the image. The six direct packages are documented in the README and `docs/backend-stack.md`, which covers the lost "which did I choose" information | decided                   |
@@ -348,11 +359,17 @@ shown, applied until the user says `change #n`), **done**.
 | 38  | 2026-10-15 | Design direction (`docs/plan.md` §3.8): Praeter's palette and type reduced to roles (13 colours, two radii, one shadow); Karla for copy and Basic for h1/h2 from Google Fonts, which amends "one sans family" in 26; blue for actions, green for solar data; top nav bar with a centred 1152px column; tinted page with borderless shadowed cards; sites page as rows in one card; light mode only. The mockup on a Claude Design canvas (link in §3.8 and §11) is a reference, not scope: each component is built in the phase that first needs it | Design is the user's differentiator and matching praeter.energy costs one extra token and one link tag; the AA-safe shades are Praeter's own darker steps (their brand blue under white text is 4.3:1, so buttons use `#1F6692`) | decided |
 | 39  | 2026-10-15 | A map pane on the sites page (Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with attribution, `CircleMarker` per site with a popup linking to the site) is a stretch item: branch `feat/map`, Sunday evening at the earliest, only when phase 6 is merged and green; dropped otherwise. Reserve if dropped: one "Open in OpenStreetMap" link per site. Details in `docs/plan.md` §5 | The brief grades correctness and safety, not features; two packages and a third-party tile host to explain in the interview; three to four hours for a first Leaflet user; phases 2 to 6 come first | decided |
 | 40  | 2026-10-15 | Icons: Phosphor (`@phosphor-icons/react`), one package, named imports only; `regular` weight, 16px inside buttons and 20px elsewhere, `fill` for a selected state; `CircleNotch` in `duotone` weight with `animate-spin` is the loading spinner, the one non-regular icon, because its faint full ring doubles as the track; decorative icons get `aria-hidden`, icon-only buttons get `aria-label`. Replaces the hand-written inline SVGs in the mockup. Amends 16 | User preference; matches praeter.energy's thin-line chip icons; named imports are tree-shaken so only the icons used ship; one component API (`size`, `weight`) instead of hand-maintained SVG paths | decided |
+| 41  | 2026-10-16 | Two file tiers: **T** (typed by the user from project-specific snippets with line-by-line breakdowns: `db.py`, `auth.py`, `routers/auth.py`, the ownership helper and first site routes, `pvgis.py`, `energy.py`, `conftest.py` and the first tests, `client.ts`, `auth.ts`, `AuthContext`, `Login`, `RequireAuth`) and **D** (drafted by Claude on `draft <file>` from a pattern already in the repository, then walked through by the user before commit: `schemas.py`, put/delete routes, later test files, `types.ts`, `Register`, `NavBar`, the small components, `SiteForm`, `SiteDetail`, `MonthlyChart`, battery UI, README body). Tier table in `docs/plan.md` §2. Amends 4, 7 and 33 and replaces the per-file override protocol; the README AI-usage paragraph is the public record of the process | Pattern-following files add no new concept; the core modules are where the understanding must be, so that is where the typing goes | decided |
+| 42  | 2026-10-16 | Cut list applied (`docs/plan.md` §5): security-headers middleware dropped; design polish one hour instead of two; CI only if the workflow is drafted in under ten minutes; map unchanged (39) | Must-haves first; every item was already on the cut list | decided |
+| 43  | 2026-10-16 | Task loop: one task at a time. For each task Claude gives a detailed step-by-step breakdown, ending with the exact git commands to commit it; the next task starts only after that commit | One finished, committed unit at a time keeps the branch green and every diff reviewable | decided |
+| 44  | 2026-10-16 | Every backend file is T tier: the user types all of `backend/` from snippets with line-by-line breakdowns and syntax notes; Claude writes no backend code. Breakdowns drop the JavaScript column; JS analogies only on request. Frontend D files stay available on an explicit `draft <file>`. Amends 27 and 41 | The user wants to understand everything that happens in the backend | decided |
+| 45  | 2026-10-16 | The CSRF token lives in one module variable in `src/api/client.ts`, set by `setCsrfToken()` from the functions in `src/api/auth.ts` (register, login, getMe set it; logout clears it). `request()` adds `X-CSRF-Token` to every non-GET call when a token is known. `AuthContext` holds only `status` and `email`, not the token | One owner for the token, next to the only code that sends it; components never handle it. Still memory-only, so decision 11 holds | default |
 
 ## 10. Open questions
 
 None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the amended rows 10, 13, 14,
 18, 24 and 26. The design direction and the map question of 2026-10-15 are resolved in decisions 38 and 39.
+The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 45.
 Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
 
 ## 11. Pointers
