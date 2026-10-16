@@ -14,7 +14,7 @@
 
 - [ ] `docker build -t solar .` then `docker run -p 8000:8000 solar` serves the app on http://localhost:8000 from a clean clone.
 - [ ] All eleven contract routes exist with the exact paths, camelCase field names, and the status codes in §3.2.
-- [ ] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
+- [x] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
 - [ ] Sites CRUD is scoped to the caller. Another user's site id returns 404.
 - [ ] POST/PUT /api/sites return a message per invalid field.
 - [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
@@ -26,7 +26,7 @@
 
 - [ ] Monthly bar chart on the site page; battery comparison with "the battery adds X kWh".
 - [ ] `@lru_cache` on the two PVGIS fetch functions.
-- [ ] Session expiry (7 days) enforced.
+- [x] Session expiry (7 days) enforced.
 - [ ] GitHub Actions: one job running `docker build` on every push (optional, phase 6).
 
 **Won't (say so in the README)**
@@ -232,9 +232,9 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Acceptance**
 
-- [ ] Full flow in the browser. Refresh keeps you logged in. After logout the back button cannot reach protected data.
-- [ ] DevTools shows the cookie with HttpOnly and SameSite=Lax.
-- [ ] `pytest` green.
+- [x] Full flow in the browser. Refresh keeps you logged in. After logout the back button cannot reach protected data.
+- [x] DevTools shows the cookie with HttpOnly and SameSite=Lax.
+- [x] `pytest` green.
 
 **Learn first:** password hashing (Argon2id, salt, verify); server-side sessions versus JWT; cookie attributes; what CSRF is and why SameSite=Lax alone is not the whole answer; FastAPI `Depends`, `Response.set_cookie`, `Request.cookies`; the stdlib `sqlite3` module (connections, cursors, `?` placeholders, `commit`, `row_factory`), `SELECT ... WHERE`, unique constraints and `sqlite3.IntegrityError`; React context with a provider; React Router 7 layout routes, `Navigate`, `Outlet`.
 **Interview angles:** 401 versus 403; one error message for unknown email and wrong password; why the CSRF token is returned in JSON rather than a readable cookie; why HttpOnly; why not localStorage; a fresh token on every login (session fixation).
@@ -526,7 +526,7 @@ Stretch (decision 39; only when phase 6 is merged and green, Sunday evening at t
 - [x] Phase 0 merged
 - [x] Phase 1 merged
 - [x] Phase 1b merged
-- [ ] Phase 2 merged
+- [x] Phase 2 merged
 - [ ] Phase 3 merged
 - [ ] Phase 4 merged
 - [ ] Phase 5 merged
