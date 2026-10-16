@@ -301,12 +301,14 @@ docker build -t solar . && docker run --rm -p 8000:8000 solar
 
 ## 8. Git workflow (summary; details in [docs/git-workflow.md](docs/git-workflow.md))
 
-- Trunk-based. `main` always builds in Docker. One short-lived branch per phase: `type/topic`
+- Trunk-based. `main` always builds in Docker. One short-lived branch per PR: `type/topic`
   (`feat/auth`, `feat/design-system`, `chore/skeleton`, `fix/...`, `docs/...`). No branches per layer.
 - Conventional Commits with scopes `auth sites pvgis energy api web design docker ci deps docs`. Commit when
   green. Backend and frontend of one slice in separate commits.
-- One PR per phase, self-reviewed on GitHub plus `review` here, merged with a merge commit (not squash),
-  branch deleted.
+- PRs split along coherent seams so each stays easy to review: one purpose per PR, tests in the same PR as
+  the code they cover, `main` green after every merge; aim for under about 400 changed lines, not a hard
+  limit (decision 47). Self-reviewed on GitHub plus `review` here, merged with a merge commit (not squash),
+  branch deleted. A phase's acceptance boxes are ticked by its last PR.
 - Public repository; `CLAUDE.md` and `docs/` are committed; README carries an AI-usage paragraph.
 - CI runs `docker build` from phase 1; branch protection on `main` (require PR + green CI) after phase 1.
 - The user runs every git and gh command. Claude only reads git state.
@@ -365,12 +367,13 @@ shown, applied until the user says `change #n`), **done**.
 | 44  | 2026-10-16 | Every backend file is T tier: the user types all of `backend/` from snippets with line-by-line breakdowns and syntax notes; Claude writes no backend code. Breakdowns drop the JavaScript column; JS analogies only on request. Frontend D files stay available on an explicit `draft <file>`. Amends 27 and 41 | The user wants to understand everything that happens in the backend | decided |
 | 45  | 2026-10-16 | The CSRF token lives in one module variable in `src/api/client.ts`, set by `setCsrfToken()` from the functions in `src/api/auth.ts` (register, login, getMe set it; logout clears it). `request()` adds `X-CSRF-Token` to every non-GET call when a token is known. `AuthContext` holds only `status` and `email`, not the token | One owner for the token, next to the only code that sends it; components never handle it. Still memory-only, so decision 11 holds | default |
 | 46  | 2026-10-16 | Page data state is a discriminated union per page (`{ status: "loading" } \| { status: "error"; message } \| { status: "success"; ... }`) held in one `useState`, set once per transition; applies to the sites list and every later page that loads data. Fetching stays in `useEffect` (16 still rules out TanStack Query); effects that depend on a route param ignore stale responses with a cleanup flag | Impossible states (data and error both set) cannot be represented and TypeScript narrows on `status`; the user prefers it for clarity when presenting the code | decided |
+| 47  | 2026-10-16 | A phase may ship as several PRs, split along coherent seams (for example API plus first page, then the remaining pages). Each PR has one purpose, carries the tests for its code, and leaves `main` green; aim for under about 400 changed lines, as a target rather than a cutoff. Amends 8 (one PR per phase) | Every PR in the public repository stays easy to review; review effectiveness drops on large diffs, and the phase 2 PR was 1084 changed lines | decided |
 
 ## 10. Open questions
 
 None. The KISS review of 2026-10-14 is resolved in decisions 33 to 37 and in the amended rows 10, 13, 14,
 18, 24 and 26. The design direction and the map question of 2026-10-15 are resolved in decisions 38 and 39.
-The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 46.
+The working mode, the cut list and the task loop of 2026-10-16 are resolved in decisions 41 to 47.
 Rows marked **default** in §9 apply until the user says `change #n`. Anything new goes here first, then into §9 once answered.
 
 ## 11. Pointers

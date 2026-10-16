@@ -73,9 +73,15 @@ Rules:
 - No co-author trailers (decided 16 Oct). The README's AI-usage paragraph is the record of how AI was
   used; the tier table in `docs/plan.md` §2 says which files were typed and which were drafted.
 
-## 4. Pull requests: one per slice, self-reviewed
+## 4. Pull requests: small, coherent, self-reviewed
 
-Open a PR when the slice's acceptance checks pass and tests are green. The PR is the moment you re-read your
+A phase may ship as several PRs (decision 47). Split along a seam that makes sense on its own: the API with
+its tests plus the first page that uses it, then the remaining pages. Each PR has one purpose, includes the
+tests for its code, and leaves `main` green. Aim for under about 400 changed lines; a coherent PR slightly
+over is better than two halves that only make sense together. Check the size with
+`git diff --stat main...HEAD`.
+
+Open a PR when its part works end to end and tests are green; the phase's acceptance checks gate its last PR. The PR is the moment you re-read your
 own diff as a reviewer, which is exactly the interview exercise.
 
 Per PR:
@@ -89,7 +95,8 @@ Per PR:
    first flatten all the branch's commits into a single new commit and put only that on `main`, which
    gives a tidy one-line-per-feature history but loses the backend/frontend/test steps you want a
    reviewer to see.
-6. `git switch main && git pull`, tick the phase in `docs/plan.md`, start the next branch from `main`.
+6. `git switch main && git pull`, tick the phase in `docs/plan.md` after its last PR, start the next branch
+   from `main`.
 
 A PR should live hours, not days. If a slice is dragging, merge the working half behind an obviously
 unfinished UI rather than letting the branch drift.

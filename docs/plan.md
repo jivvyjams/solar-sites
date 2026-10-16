@@ -58,7 +58,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 1. Ask Claude `brief phase N`. You get the tier table below in build order, the concepts to learn, API shapes in words, acceptance checks and tests.
 2. Backend T files first: `snippet <file>` gives the project-specific code chunk by chunk with a breakdown table; type it in; exercise it in `/docs`. Then the frontend, then end to end in the browser.
 3. D files: `draft <file>`, read the diff, then `walkthrough <file>` and answer the three questions before the file goes into a commit.
-4. Ask `review`. Fix findings you understand (Claude applies them in D files). Tests green. Commit. Open the PR. Merge. Tick the boxes in §7.
+4. Ask `review`. Fix findings you understand (Claude applies them in D files). Tests green. Commit. Open a PR per coherent part, aiming for under about 400 changed lines (decision 47). Merge. Tick the boxes in §7 after the phase's last PR.
 5. Ask `quiz` at the end of the day, three questions per phase.
 
 ### Tiers per phase (set 16 Oct, decision 41)
