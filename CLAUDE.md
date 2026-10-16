@@ -261,8 +261,8 @@ docker build -t solar . && docker run --rm -p 8000:8000 solar
 - Routers orchestrate only: validate (Pydantic), authorise (dependencies), call a module, return a schema.
   Business logic lives in `pvgis.py` and `energy.py`; `energy.py` is pure (no I/O, no FastAPI imports);
   `pvgis.py` raises `HTTPException` directly (decision 35). Every route is a plain `def` (decision 34).
-- Errors: `HTTPException(status_code, detail)` for single messages; `RequestValidationError` handler for
-  `{"detail": "Validation failed", "errors": {field: message}}`. Status table: `docs/plan.md` §3.2.
+- Errors: `HTTPException(status_code, detail)` for single messages; validation errors keep FastAPI's default
+  422 body, with no custom handler (decision 10). Status table: `docs/plan.md` §3.2.
 - No bare `except:`; catch the specific exception. Never log passwords, hashes or tokens.
 - Timezone-aware datetimes only (`datetime.now(UTC)`, which ruff prefers over the identical `timezone.utc`), stored as ISO 8601 UTC text.
 - FastAPI parameters use `Annotated[type, Depends(...)]` / `Annotated[type, Header()]`; ruff's default rules reject `Depends(...)` as an argument default (B008).
