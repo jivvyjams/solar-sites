@@ -111,7 +111,7 @@ export default function SiteForm(): ReactElement {
   }
 
   const title = id === undefined ? "Add site" : "Edit site";
-  const cancelTo = id === undefined ? "/" : `/site/${id}`;
+  const cancelTo = id === undefined ? "/" : `/sites/${id}`;
 
   let content: ReactElement;
   if (page.status === "error") {
