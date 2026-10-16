@@ -345,9 +345,9 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 | Table      | Columns                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null; `created_at` datetime                                                                        |
-| `sessions` | `id` UUID PK; `token` text unique not null (indexed); `csrf_token` text not null; `user_id` FK users.id; `created_at`; `expires_at`                                                         |
-| `sites`    | `id` UUID PK; `user_id` FK users.id (indexed); `client_name` text; `address` text; `latitude` real; `longitude` real; `roof_area_m2` real null; `peak_kwp` real; `created_at`; `updated_at` |
+| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null |
+| `sessions` | `token` text PK; `csrf_token` text not null; `user_id` FK users.id; `created_at` (UTC ISO text; expiry is `created_at` + 7 days, decision 20) |
+| `sites`    | `id` UUID PK; `user_id` FK users.id (indexed); `client_name` text; `address` text; `latitude` real; `longitude` real; `roof_area_m2` real null; `peak_kwp` real |
 
 Python attribute names are snake_case; JSON field names are camelCase through Pydantic aliases. Never expose `password_hash`, `token`, `csrf_token` of other sessions, or `user_id`.
 
