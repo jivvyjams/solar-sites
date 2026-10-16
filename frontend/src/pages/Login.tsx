@@ -34,7 +34,7 @@ export default function Login(): ReactElement {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
+    <main className="mx-auto max-w-6xl px-7 py-10 min-h-screen flex items-center justify-center">
       <div className="w-full max-w-sm flex flex-col gap-6 bg-surface rounded-card shadow-card p-8">
         <h1 className="font-display text-3xl">Log in</h1>
 
@@ -79,7 +79,7 @@ export default function Login(): ReactElement {
           No account yet?{" "}
           <Link
             to="/register"
-            className="font-semibold text-accent hover:text-accent-hover rounded-control focus-visible:outline-2 focus-visible:outline-offset 2 focus-visible:outline-brand"
+            className="font-semibold text-accent hover:text-accent-hover rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             Create one
           </Link>
