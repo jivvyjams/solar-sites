@@ -4,9 +4,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app import pvgis
 from app.auth import current_user, require_csrf
 from app.db import get_db
-from app.schemas import SiteIn, SiteOut
+from app.schemas import ProductionOut, SiteIn, SiteOut
 
 router = APIRouter(prefix="/api/sites")
 
@@ -110,3 +111,14 @@ def delete_site(
         (str(site_id), user["id"]),
     )
     db.commit()
+
+
+@router.get("/{site_id}/production")
+def get_prodcution(
+    site_id: uuid.UUID,
+    user: Annotated[sqlite3.Row, Depends(current_user)],
+    db: Annotated[sqlite3.Connection, Depends(get_db)],
+) -> ProductionOut:
+    site = get_owned_site(site_id, user, db)
+    data = pvgis.fetch_pvcalc(site["latitude"], site["longitude"], site["peak_kwp"])
+    return ProductionOut.model_validate(pvgis.to_production(data))
