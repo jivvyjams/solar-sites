@@ -8,13 +8,14 @@ from test_sites import SITE, log_in
 
 from app import pvgis
 
-FIXTURE = Path(__file__).parent / "fixtures" / "pvcalc.json"
+PV_FIXTURE = Path(__file__).parent / "fixtures" / "pvcalc.json"
+SERIES_FIXTURE = Path(__file__).parent / "fixtures" / "seriescalc.json"
 
 
 def test_production_maps_pvgis_output(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    data = json.loads(FIXTURE.read_text())
+    data = json.loads(PV_FIXTURE.read_text())
 
     def fake_fetch(lat: float, lon: float, kwp: float) -> dict:
         return data
@@ -48,3 +49,13 @@ def test_production_with_no_pvgis_data_returns_422(
 
     assert response.status_code == 422
     assert response.json() == {"detail": "PVGIS has no data for this location"}
+
+
+def test_to_hourly_kwh_converts_watts_to_kwh() -> None:
+    data = json.loads(SERIES_FIXTURE.read_text())
+
+    hourly = pvgis.to_hourly_kwh(data)
+
+    assert len(hourly) == 24
+    assert hourly[0] == 0
+    assert hourly[12] == pytest.approx(3.7724)
