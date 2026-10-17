@@ -45,7 +45,7 @@ or future-proofing.
   full frontend in a team. Advanced Linux and terminal user (tiling WM, tmux). Strong design interest.
 - **No Python experience at all.** Zero backend experience. New to FastAPI, SQL and ORMs, HTTP sessions,
   Docker for apps. Quick study; transfers from a JavaScript base.
-- Learns best from a plain explanation of what the code does, then the Python idiom, then the docs link.
+- Learns best from a plain explanation of what the code does, then the Python idiom, then the docs link. Backend explanations are pitched at a complete beginner (decision 50).
   JavaScript analogies only when the user asks for one (decision 44).
   Primer: [docs/python-for-js-devs.md](docs/python-for-js-devs.md).
 - Is preparing for a technical interview about this code. Interview readiness is a first-class goal.
@@ -370,6 +370,7 @@ shown, applied until the user says `change #n`), **done**.
 | 47  | 2026-10-16 | A phase may ship as several PRs, split along coherent seams (for example API plus first page, then the remaining pages). Each PR has one purpose, carries the tests for its code, and leaves `main` green; aim for under about 400 changed lines, as a target rather than a cutoff. Amends 8 (one PR per phase) | Every PR in the public repository stays easy to review; review effectiveness drops on large diffs, and the phase 2 PR was 1084 changed lines | decided |
 | 48  | 2026-10-16 | Delete confirms with the browser's `window.confirm`, no custom dialog; after a delete the app navigates to the list with `replace` so Back does not return to the deleted site. The sites list lives at `/`, not `/sites` (pages: `/sites/new`, `/sites/:id`, `/sites/:id/edit`) | One line instead of a modal component with focus handling; the brief asks that destructive actions confirm, not how. `/` avoids a redirect route | default |
 | 49  | 2026-10-17 | Any HTTP 400 from PVGIS becomes our 422 "PVGIS has no data for this location"; the error body is not read or string-matched. Any other non-2xx, a timeout or a connection error becomes 502. Refines 35 and replaces the "message mentions the sea" check in `docs/plan.md` phase 4 | `SiteIn` validates coordinates and kWp and the other parameters are hard-coded, so a 400 in practice means sea or no coverage; saves parsing the body and a check that breaks if PVGIS rewords its message. Trade-off: a typo in our own params would read as "no data", caught by the Hague acceptance check | decided |
+| 50  | 2026-10-17 | Backend explanations are pitched at a complete beginner: big picture first in plain words, then the topic broken into small ideas, then the syntax behind each new construct; broad understanding over intricate detail. Applies to every backend snippet, concept, brief, review and error explanation. Amends §3.4 (L1 and L3 depth for the backend) | User request: the earlier explanations assumed too much backend background | decided |
 
 ## 10. Open questions
 
