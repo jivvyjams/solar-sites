@@ -274,7 +274,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Backend**
 
-1. `pvgis.py`: `fetch_pvcalc(lat, lon, kwp)` is a plain function that calls PVcalc with `httpx.get(url, params=..., timeout=30)` and `loss=14`, `optimalangles=1`, `outputformat=json`. On HTTP 400 whose JSON message mentions the sea or missing data, raise `HTTPException(422, "PVGIS has no data for this location")`. On any other failure (non-2xx, connection error, timeout) raise `HTTPException(502, "PVGIS is unavailable")`. No custom exception class, no async (decisions 34 and 35).
+1. `pvgis.py`: `fetch_pvcalc(lat, lon, kwp)` is a plain function that calls PVcalc with `httpx.get(url, params=..., timeout=30)` and `loss=14`, `optimalangles=1`, `outputformat=json`. On any HTTP 400 (sea, no coverage; the body is not read, decision 49), raise `HTTPException(422, "PVGIS has no data for this location")`. On any other failure (non-2xx, connection error, timeout) raise `HTTPException(502, "PVGIS is unavailable")`. No custom exception class, no async (decisions 34 and 35).
 2. Decorate it with `@functools.lru_cache(maxsize=128)`. The arguments are floats, so the result is cached per (lat, lon, kwp); a raised exception is never cached; editing a site changes the arguments, so no invalidation code is needed. Never mutate the returned data.
 3. Mapping, in the route or a tiny helper: `outputs.totals.fixed.E_y` → `yearlyKwh`; each of `outputs.monthly.fixed[*]` → `{month, kwh: E_m}`; round to one decimal.
 4. `routers/sites.py`: the production route reuses `get_owned_site`, calls the fetch, returns the mapped shape.
