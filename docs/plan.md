@@ -17,7 +17,7 @@
 - [x] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
 - [x] Sites CRUD is scoped to the caller. Another user's site id returns 404.
 - [x] POST/PUT /api/sites return a message per invalid field.
-- [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
+- [x] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
 - [ ] Battery endpoint runs an hourly simulation with the consumption model documented in the README.
 - [ ] Backend tests cover auth flow, ownership isolation, validation, CSRF, energy maths. `pytest` is green.
 - [ ] README (replacing the Next.js boilerplate): how to run (Docker and dev), stack choices and why, session/CSRF design, consumption model and why, PVGIS handling, known limits, honest AI-usage statement.
@@ -288,9 +288,9 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Acceptance**
 
-- [ ] The Hague site (52.08, 4.31, 5 kWp) shows about 5341 kWh/year and 12 months.
-- [ ] A site at 55.0, 3.0 (North Sea) shows a clear message, not a 500.
-- [ ] A second load is instant (cache hit).
+- [x] The Hague site (52.08, 4.31, 5 kWp) shows about 5341 kWh/year and 12 months.
+- [x] A site at 55.0, 3.0 (North Sea) shows a clear message, not a 500.
+- [x] A second load is instant (cache hit).
 
 **Learn first:** `httpx.get` with `params` and `timeout`; `response.status_code` and `response.json()`; `httpx.HTTPError`; raising `HTTPException` from a helper; `@lru_cache`; `monkeypatch` in pytest.
 **Interview angles:** why the backend proxies PVGIS; 502 versus 422; why a plain `def` route is fine for a slow call (thread pool); what `lru_cache` does and does not cache.
@@ -530,7 +530,7 @@ Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, 
 - [x] Phase 1b merged
 - [x] Phase 2 merged
 - [x] Phase 3 merged
-- [ ] Phase 4 merged
+- [x] Phase 4 merged
 - [ ] Phase 5 merged
 - [ ] Phase 6 merged
 - [ ] `v1.0.0` tagged and submitted
