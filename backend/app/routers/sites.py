@@ -114,7 +114,7 @@ def delete_site(
 
 
 @router.get("/{site_id}/production")
-def get_prodcution(
+def get_production(
     site_id: uuid.UUID,
     user: Annotated[sqlite3.Row, Depends(current_user)],
     db: Annotated[sqlite3.Connection, Depends(get_db)],
