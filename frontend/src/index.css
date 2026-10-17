@@ -24,6 +24,14 @@
   --radius-control: 6px;
   --radius-card: 12px;
   --shadow-card: 0 2px 14px rgb(41 129 182 / 0.08);
+
+  --animate-grow: grow 700ms ease-out;
+
+  @keyframes grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
 }
 
 @layer base {
