@@ -17,7 +17,7 @@
 - [x] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
 - [x] Sites CRUD is scoped to the caller. Another user's site id returns 404.
 - [x] POST/PUT /api/sites return a message per invalid field.
-- [ ] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
+- [x] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
 - [ ] Battery endpoint runs an hourly simulation with the consumption model documented in the README.
 - [ ] Backend tests cover auth flow, ownership isolation, validation, CSRF, energy maths. `pytest` is green.
 - [ ] README (replacing the Next.js boilerplate): how to run (Docker and dev), stack choices and why, session/CSRF design, consumption model and why, PVGIS handling, known limits, honest AI-usage statement.
@@ -288,9 +288,9 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Acceptance**
 
-- [ ] The Hague site (52.08, 4.31, 5 kWp) shows about 5341 kWh/year and 12 months.
-- [ ] A site at 55.0, 3.0 (North Sea) shows a clear message, not a 500.
-- [ ] A second load is instant (cache hit).
+- [x] The Hague site (52.08, 4.31, 5 kWp) shows about 5341 kWh/year and 12 months.
+- [x] A site at 55.0, 3.0 (North Sea) shows a clear message, not a 500.
+- [x] A second load is instant (cache hit).
 
 **Learn first:** `httpx.get` with `params` and `timeout`; `response.status_code` and `response.json()`; `httpx.HTTPError`; raising `HTTPException` from a helper; `@lru_cache`; `monkeypatch` in pytest.
 **Interview angles:** why the backend proxies PVGIS; 502 versus 422; why a plain `def` route is fine for a slow call (thread pool); what `lru_cache` does and does not cache.
@@ -508,7 +508,9 @@ Cut list (cut from the bottom first; everything above the line stays):
 
 Never cut: Docker path, auth with hashing, CSRF and session expiry, ownership isolation, per-field validation, production, battery, the minimal tests, README.
 
-Stretch (decision 39; only when phase 6 is merged and green, Sunday evening at the earliest, branch `feat/map`): a map pane on the sites page with Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with the "© OpenStreetMap contributors" line, one `CircleMarker` per site (not `Marker`: its icon images break under Vite) with a popup linking to the site, bounds fitted to the sites, and an explicit container height. The "Sites with map" artboard on the canvas is the target. About three to four hours including the README paragraph. If it is dropped, the reserve is one "Open in OpenStreetMap" link per site built from the coordinates, zero packages.
+Stretch 1 (decision 53; only when phase 6 is merged and green, before the map, branch `feat/address-lookup`): a postcode lookup on the site form. A small separate `<form>` above the site form (a sibling, never nested) with postcode and house number inputs and a "Look up" button. It calls a new backend route, `GET /api/address-lookup?postcode=&houseNumber=` (requires a session; postcode validated with `Query`), which calls PDOK Locatieserver with `httpx.get` and a timeout, in the same pattern as `pvgis.py`, and returns `{address, latitude, longitude}`; not found is a 404 or 422, any other failure a 502, with our own messages. The frontend fills the existing `address`, `latitude` and `longitude` fields, which stay editable; the site contract is unchanged. No suggestions as you type. To verify first: PDOK response fields (coordinates likely `POINT(lon lat)`, longitude first). About two hours. README "next steps" mentions it whether or not it is built.
+
+Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, Sunday evening at the earliest, branch `feat/map`): a map pane on the sites page with Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with the "© OpenStreetMap contributors" line, one `CircleMarker` per site (not `Marker`: its icon images break under Vite) with a popup linking to the site, bounds fitted to the sites, and an explicit container height. The "Sites with map" artboard on the canvas is the target. About three to four hours including the README paragraph. If it is dropped, the reserve is one "Open in OpenStreetMap" link per site built from the coordinates, zero packages.
 
 ## 6. End-to-end manual test script (run on the Docker image)
 
@@ -528,7 +530,7 @@ Stretch (decision 39; only when phase 6 is merged and green, Sunday evening at t
 - [x] Phase 1b merged
 - [x] Phase 2 merged
 - [x] Phase 3 merged
-- [ ] Phase 4 merged
+- [x] Phase 4 merged
 - [ ] Phase 5 merged
 - [ ] Phase 6 merged
 - [ ] `v1.0.0` tagged and submitted

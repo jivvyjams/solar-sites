@@ -43,7 +43,8 @@ function toValues(site: Site): FormValues {
 }
 
 function toNumber(value: string): number {
-  return value.trim() === "" ? Number.NaN : Number(value);
+  const normalized = value.trim().replace(",", ".");
+  return normalized === "" ? Number.NaN : Number(normalized);
 }
 
 function toInput(values: FormValues): SiteInput {
@@ -144,8 +145,6 @@ export default function SiteForm(): ReactElement {
           <Field
             label="Latitude"
             id="latitude"
-            type="number"
-            step="any"
             value={values.latitude}
             onChange={(e) => setField("latitude", e.target.value)}
             error={error?.fieldErrors.latitude}
@@ -153,8 +152,6 @@ export default function SiteForm(): ReactElement {
           <Field
             label="Longitude"
             id="longitude"
-            type="number"
-            step="any"
             value={values.longitude}
             onChange={(e) => setField("longitude", e.target.value)}
             error={error?.fieldErrors.longitude}
@@ -162,8 +159,6 @@ export default function SiteForm(): ReactElement {
           <Field
             label="Peak power (kWp)"
             id="peakKwp"
-            type="number"
-            step="any"
             value={values.peakKwp}
             onChange={(e) => setField("peakKwp", e.target.value)}
             error={error?.fieldErrors.peakKwp}
@@ -171,8 +166,6 @@ export default function SiteForm(): ReactElement {
           <Field
             label="Roof area (m², optional)"
             id="roofAreaM2"
-            type="number"
-            step="any"
             value={values.roofAreaM2}
             onChange={(e) => setField("roofAreaM2", e.target.value)}
             error={error?.fieldErrors.roofAreaM2}

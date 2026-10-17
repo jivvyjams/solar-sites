@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
-import { deleteSite, getSite } from "../api/sites";
-import type { Site } from "../api/types";
+import { deleteSite, getProduction, getSite } from "../api/sites";
+import type { Production, Site } from "../api/types";
 import Button from "../components/Button";
 import { buttonClasses } from "../components/buttonClasses";
 import ErrorBanner from "../components/ErrorBanner";
+import MonthlyChart from "../components/MonthlyChart";
 import PageHeader from "../components/PageHeader";
 import Spinner from "../components/Spinner";
 
@@ -13,6 +14,11 @@ type PageState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "success"; site: Site };
+
+type ProductionState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "success"; production: Production };
 
 function Detail({
   label,
@@ -31,12 +37,44 @@ function Detail({
   );
 }
 
+function ProductionBody({ state }: { state: ProductionState }): ReactElement {
+  if (state.status === "loading") {
+    return <Spinner label="Asking PVGIS" />;
+  }
+  if (state.status === "error") {
+    return (
+      <p
+        role="status"
+        className="rounded-control bg-accent-soft px-3 py-2 text-sm"
+      >
+        {state.message}
+      </p>
+    );
+  }
+
+  const { yearlyKwh, monthlyKwh } = state.production;
+  return (
+    <>
+      <p>
+        <span className="text-5xl font-semibold">
+          {Math.round(yearlyKwh).toLocaleString("en-US")}
+        </span>
+        <span className="ml-2 text-text-muted">kWh per year</span>
+      </p>
+      <MonthlyChart months={monthlyKwh} />
+    </>
+  );
+}
+
 export default function SiteDetail(): ReactElement {
   const id = useParams().id!;
   const navigate = useNavigate();
   const [page, setPage] = useState<PageState>({ status: "loading" });
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [production, setProduction] = useState<ProductionState>({
+    status: "loading",
+  });
 
   useEffect(() => {
     getSite(id)
@@ -45,6 +83,18 @@ export default function SiteDetail(): ReactElement {
         setPage({
           status: "error",
           message: err instanceof Error ? err.message : "Could not load site.",
+        });
+      });
+  }, [id]);
+
+  useEffect(() => {
+    getProduction(id)
+      .then((data) => setProduction({ status: "success", production: data }))
+      .catch((err: unknown) => {
+        setProduction({
+          status: "error",
+          message:
+            err instanceof Error ? err.message : "Could not load production.",
         });
       });
   }, [id]);
@@ -109,6 +159,10 @@ export default function SiteDetail(): ReactElement {
           value={site.roofAreaM2 === null ? "Not set" : `${site.roofAreaM2} m²`}
         />
       </dl>
+      <section className="flex flex-col gap-6 rounded-card bg-surface p-6 shadow-card">
+        <h2 className="font-display text-2xl">Production</h2>
+        <ProductionBody state={production} />
+      </section>
     </div>
   );
 }

@@ -20,3 +20,13 @@ export type SiteInput = {
 export type Site = SiteInput & {
   id: string;
 };
+
+export type MonthKwh = {
+  month: number;
+  kwh: number;
+};
+
+export type Production = {
+  yearlyKwh: number;
+  monthlyKwh: MonthKwh[];
+};
