@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { Site, SiteInput } from "./types";
+import type { Production, Site, SiteInput } from "./types";
 
 function sitePath(id: string): string {
   return `/api/sites/${encodeURIComponent(id)}`;
@@ -23,4 +23,8 @@ export function updateSite(id: string, input: SiteInput): Promise<Site> {
 
 export function deleteSite(id: string): Promise<void> {
   return request<void>(sitePath(id), { method: "DELETE" });
+}
+
+export function getProduction(id: string): Promise<Production> {
+  return request<Production>(`${sitePath(id)}/production`);
 }
