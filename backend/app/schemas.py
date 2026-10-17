@@ -29,3 +29,13 @@ class SiteIn(CamelModel):
 
 class SiteOut(SiteIn):
     id: str
+
+
+class MonthKwh(CamelModel):
+    month: int
+    kwh: float
+
+
+class ProductionOut(CamelModel):
+    yearly_kwh: float
+    monthly_kwh: list[MonthKwh]
