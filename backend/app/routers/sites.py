@@ -128,13 +128,13 @@ def get_production(
 def get_battery(
     site_id: uuid.UUID,
     capacity_kwh: Annotated[float, Query(alias="capacityKwh", ge=0, le=1000)],
-    annual_use_kwh: Annotated[float, Query(alias="annualUseKwh", ge=0, le=1_000_000)],
+    annual_use_kwh: Annotated[float, Query(alias="annualUseKwh", gt=0, le=1_000_000)],
     user: Annotated[sqlite3.Row, Depends(current_user)],
     db: Annotated[sqlite3.Connection, Depends(get_db)],
 ) -> BatteryOut:
     site = get_owned_site(site_id, user, db)
     production = pvgis.fetch_seriescalc(
-        site["latitude", site["longitude"], site["peak_kwp"]]
+        site["latitude"], site["longitude"], site["peak_kwp"]
     )
     use = energy.hourly_use(annual_use_kwh, len(production))
     without_battery = energy.simulate(production, use, 0)
