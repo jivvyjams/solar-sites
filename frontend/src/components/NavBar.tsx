@@ -23,7 +23,7 @@ export default function NavBar(): ReactElement {
           Solar Sites
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-text-muted hidden text-sm text-text-muted sm:inline">
+          <span className="hidden text-sm text-text-muted sm:inline">
             {email}
           </span>
           <Button variant="secondary" onClick={logout}>

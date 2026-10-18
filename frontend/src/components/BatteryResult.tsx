@@ -19,9 +19,11 @@ function ValueCell({
 }): ReactElement {
   const share = total > 0 ? Math.min((value / total) * 100, 100) : 0;
   return (
-    <td className="py-3.5 pr-6">
+    <td className="py-3.5 pr-3 sm:pr-6">
       <div className="flex flex-col gap-1.5">
-        <span className="font-semibold tabular-nums">{kwh(value)}</span>
+        <span className="font-semibold tabular-nums whitespace-nowrap">
+          {kwh(value)}
+        </span>
         <div className="h-2 rounded-full bg-canvas">
           <div
             className={`h-2 rounded-full ${bar}`}
@@ -50,7 +52,9 @@ export default function BatteryResult({
           <span className="text-3xl font-semibold">
             +{kwh(battery.batteryGainKwh)}
           </span>
-          <span className="ml-2">of self-used solar per year</span>
+          <span className="block sm:ml-2 sm:inline">
+            of self-used solar per year
+          </span>
         </p>
         <p className="text-sm">
           A {battery.capacityKwh} kWh battery lifts self-used solar from{" "}
@@ -62,11 +66,11 @@ export default function BatteryResult({
         <thead className="text-sm text-text-muted">
           <tr>
             <td />
-            <th scope="col" className="pb-3 font-semibold">
-              Without battery
+            <th scope="col" className="pb-3 font-semibold text-center">
+              Without <br className="sm:hidden" /> battery
             </th>
             <th scope="col" className="pb-3 font-semibold">
-              <span className="rounded-control bg-accent-soft px-2 py-0.5 text-accent-hover">
+              <span className="inline-block rounded-control bg-accent-soft px-2 py-0.5 text-center text-accent-hover">
                 With {battery.capacityKwh} kWh battery
               </span>
             </th>
@@ -75,7 +79,10 @@ export default function BatteryResult({
         <tbody>
           {ROWS.map((row) => (
             <tr key={row.key} className="border-t border-border">
-              <th scope="row" className="py-3.5 pr-6 text-sm font-semibold">
+              <th
+                scope="row"
+                className="py-3.5 pr-3 sm:pr-6 text-sm font-semibold"
+              >
                 {row.label}
               </th>
               <ValueCell

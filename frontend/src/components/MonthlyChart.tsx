@@ -37,7 +37,10 @@ export default function MonthlyChart({
 
   return (
     <div className="flex gap-2">
-      <div className="relative mt-8 h-40 w-10 shrink-0" aria-hidden="true">
+      <div
+        className="relative mt-8 h-40 w-2 sm:w-10 shrink-0"
+        aria-hidden="true"
+      >
         {ticks.map((t) => (
           <span
             key={t}
