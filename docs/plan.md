@@ -454,14 +454,19 @@ src/
   api/client.ts             request<T>(): JSON headers, X-CSRF-Token, ApiError with fieldErrors
   api/types.ts              Site, SiteInput, Production, BatteryResult, ApiError (mirror the contract)
   api/auth.ts  api/sites.ts  api/address.ts  one function per route; the only files that call request()
-  auth/AuthContext.tsx      status, email, csrfToken, login/register/logout; /api/me on mount
+  auth/                     AuthProvider (status, email, login/register/logout; /api/me on mount), useAuth, RequireAuth
+  sites/                    domain components: own their request state, call src/api/*, render contract types (decision 59):
+                            SiteFacts, ProductionSection, BatterySection, BatteryResult, MonthlyChart, AddressLookup, SitesMap
+  components/               design system only, never imports from api/: Button (+ buttonClasses), Field, PageHeader,
+                            ErrorBanner, EmptyState, Spinner, NavBar
   pages/  Login, Register, Sites (list + SitesMap), SiteForm (AddressLookup + fields), SiteDetail (header + three sections)
-  components/               base: Button, Field, PageHeader, ErrorBanner, EmptyState, Spinner, NavBar
-                            sections (own their request state, call src/api/*): SiteFacts, ProductionSection,
-                            BatterySection, BatteryResult, MonthlyChart, AddressLookup, SitesMap (decision 59)
   index.css                 @import "tailwindcss"; plus the @theme token block (§3.8)
   lib/format.ts             number formatting (Intl.NumberFormat)
 ```
+
+Folder rule (decision 63): a file that imports from `src/api/` knows the domain and lives in `auth/` or `sites/`;
+`components/` never imports from `api/`. The phase tables above name the seven `sites/` files under their pre-move
+`components/` path.
 
 Design: the system in §3.8. Every async view has loading, error and empty states, forms show server errors under fields, destructive actions confirm. Light mode only.
 
