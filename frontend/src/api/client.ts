@@ -54,7 +54,8 @@ export async function request<T>(
       } else if (Array.isArray(data.detail)) {
         message = "Please check the highlighted fields.";
         for (const issue of data.detail as ValidationIssue[]) {
-          fieldErrors[String(issue.loc[issue.loc.length - 1])] = issue.msg;
+          const field = String(issue.loc[issue.loc.length - 1]);
+          fieldErrors[field] = issue.msg.replace(/^Value error, /, "");
         }
       }
     } catch {

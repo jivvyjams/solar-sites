@@ -1,9 +1,10 @@
-import type { ComponentPropsWithoutRef, ReactElement } from "react";
+import type { ComponentPropsWithoutRef, ReactElement, ReactNode } from "react";
 
 type FieldProps = ComponentPropsWithoutRef<"input"> & {
   label: string;
   id: string;
   error?: string;
+  trailing?: ReactNode;
 };
 
 const inputBase =
@@ -15,6 +16,7 @@ export default function Field({
   label,
   id,
   error,
+  trailing,
   className = "",
   ...rest
 }: FieldProps): ReactElement {
@@ -26,13 +28,20 @@ export default function Field({
       <label htmlFor={id} className="text-sm font-semibold">
         {label}
       </label>
-      <input
-        {...rest}
-        id={id}
-        className={`${inputBase} ${hasError ? inputInvalid : inputValid}`}
-        aria-invalid={hasError ? true : undefined}
-        aria-describedby={hasError ? errorId : undefined}
-      />
+      <div className="relative">
+        <input
+          {...rest}
+          id={id}
+          className={`${inputBase} ${hasError ? inputInvalid : inputValid} ${trailing ? "pr-10" : ""}`}
+          aria-invalid={hasError ? true : undefined}
+          aria-describedby={hasError ? errorId : undefined}
+        />
+        {trailing && (
+          <div className="absolute inset-y-0 right-1 flex items-center">
+            {trailing}
+          </div>
+        )}
+      </div>
       {hasError && (
         <p id={errorId} className="text-sm text-danger">
           {error}
