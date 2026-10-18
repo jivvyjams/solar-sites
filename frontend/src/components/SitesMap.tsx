@@ -48,7 +48,7 @@ export default function SitesMap({ sites }: { sites: Site[] }): ReactElement {
       maxZoom={16}
       zoomControl={false}
       scrollWheelZoom={false}
-      className="sites-map isolate h-96 rounded-card shadow-card"
+      className="sites-map isolate order-first h-64 rounded-card shadow-card lg:order-none lg:h-full"
     >
       <TileLayer url={TILES} attribution={ATTRIBUTION} />
       <ZoomControl position="bottomright" />

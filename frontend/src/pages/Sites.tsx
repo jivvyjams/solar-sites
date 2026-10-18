@@ -51,8 +51,8 @@ export default function Sites(): ReactElement {
     );
   } else {
     content = (
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card">
+      <div className="grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-1">
+        <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card lg:overflow-y-auto">
           {state.sites.map((site) => (
             <li key={site.id}>
               <Link
@@ -86,7 +86,7 @@ export default function Sites(): ReactElement {
     count > 0 ? `${count} client ${count === 1 ? "site" : "sites"}` : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 lg:h-pane">
       <PageHeader title="Sites" subtitle={subtitle} action={addSite} />
       {content}
     </div>
