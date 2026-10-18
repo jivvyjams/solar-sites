@@ -30,3 +30,18 @@ export type Production = {
   yearlyKwh: number;
   monthlyKwh: MonthKwh[];
 };
+
+export type EnergyTotals = {
+  selfUsedKwh: number;
+  gridImportKwh: number;
+  gridExportKwh: number;
+};
+
+export type Battery = {
+  productionKwh: number;
+  consumptionKwh: number;
+  capacityKwh: number;
+  withoutBattery: EnergyTotals;
+  withBattery: EnergyTotals;
+  batteryGainKwh: number;
+};
