@@ -13,7 +13,7 @@ SITE = {
 
 def log_in(client: TestClient, email: str) -> TestClient:
     response = client.post(
-        "/api/register", json={"email": email, "password": "secret123"}
+        "/api/register", json={"email": email, "password": "Secret123!"}
     )
     client.headers["X-CSRF-Token"] = response.json()["csrfToken"]
     return client
