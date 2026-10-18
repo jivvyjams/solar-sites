@@ -65,7 +65,7 @@ export default function BatterySection({
         <Field
           label="Battery capacity (kWh)"
           id="capacityKwh"
-          className="w-50"
+          className="w-full md:w-50"
           value={capacityKwh}
           onChange={(e) => setCapacityKwh(e.target.value)}
           error={fieldErrors.capacityKwh}
@@ -73,7 +73,7 @@ export default function BatterySection({
         <Field
           label="Annual electricity use (kWh)"
           id="annualUseKwh"
-          className="w-60"
+          className="w-full md:w-50"
           value={annualUseKwh}
           onChange={(e) => setAnnualUseKwh(e.target.value)}
           error={fieldErrors.annualUseKwh}
