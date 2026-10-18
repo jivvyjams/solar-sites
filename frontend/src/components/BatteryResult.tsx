@@ -26,7 +26,7 @@ function ValueCell({
         </span>
         <div className="h-2 rounded-full bg-canvas">
           <div
-            className={`h-2 rounded-full ${bar}`}
+            className={`h-2 rounded-full ${bar} origin-left motion-safe:animate-grow-x`}
             style={{ width: `${share}%` }}
           />
         </div>

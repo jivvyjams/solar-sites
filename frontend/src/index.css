@@ -27,10 +27,17 @@
   --shadow-card: 0 2px 14px rgb(41 129 182 / 0.08);
 
   --animate-grow: grow 700ms ease-out;
+  --animate-grow-x: grow-x 700ms ease-out;
 
   @keyframes grow {
     from {
       transform: scaleY(0);
+    }
+  }
+
+  @keyframes grow-x {
+    from {
+      transform: scaleX(0);
     }
   }
 }
