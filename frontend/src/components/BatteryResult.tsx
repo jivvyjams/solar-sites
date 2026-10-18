@@ -2,18 +2,47 @@ import type { ReactElement } from "react";
 import type { Battery, EnergyTotals } from "../api/types";
 import { kwh } from "../lib/format";
 
-const ROWS: { label: string; key: keyof EnergyTotals }[] = [
-  { label: "Self-used solar", key: "selfUsedKwh" },
-  { label: "Imported from grid", key: "gridImportKwh" },
-  { label: "Exported to grid", key: "gridExportKwh" },
+const ROWS: { label: string; key: keyof EnergyTotals; bar: string }[] = [
+  { label: "Self-used solar", key: "selfUsedKwh", bar: "bg-solar" },
+  { label: "Imported from grid", key: "gridImportKwh", bar: "bg-border" },
+  { label: "Exported to grid", key: "gridExportKwh", bar: "bg-border" },
 ];
+
+function ValueCell({
+  value,
+  total,
+  bar,
+}: {
+  value: number;
+  total: number;
+  bar: string;
+}): ReactElement {
+  const share = total > 0 ? Math.min((value / total) * 100, 100) : 0;
+  return (
+    <td className="py-3.5 pr-6">
+      <div className="flex flex-col gap-1.5">
+        <span className="font-semibold tabular-nums">{kwh(value)}</span>
+        <div className="h-2 rounded-full bg-canvas">
+          <div
+            className={`h-2 rounded-full ${bar}`}
+            style={{ width: `${share}%` }}
+          />
+        </div>
+      </div>
+    </td>
+  );
+}
 
 export default function BatteryResult({
   battery,
 }: {
   battery: Battery;
 }): ReactElement {
-  const { withoutBattery, withBattery } = battery;
+  const { withoutBattery, withBattery, productionKwh } = battery;
+  const before = withoutBattery.selfUsedKwh;
+  const percent =
+    before > 0 ? Math.round((battery.batteryGainKwh / before) * 100) : null;
+
   return (
     <>
       <div className="flex flex-col gap-1 rounded-card bg-solar-soft px-6 py-5">
@@ -25,7 +54,8 @@ export default function BatteryResult({
         </p>
         <p className="text-sm">
           A {battery.capacityKwh} kWh battery lifts self-used solar from{" "}
-          {kwh(withoutBattery.selfUsedKwh)} to {kwh(withBattery.selfUsedKwh)}.
+          {kwh(before)} to {kwh(withBattery.selfUsedKwh)}
+          {percent !== null && `, ${percent} % more`}.
         </p>
       </div>
       <table className="w-full text-left">
@@ -45,22 +75,26 @@ export default function BatteryResult({
         <tbody>
           {ROWS.map((row) => (
             <tr key={row.key} className="border-t border-border">
-              <th scope="row" className="py-3.5 text-sm font-semibold">
+              <th scope="row" className="py-3.5 pr-6 text-sm font-semibold">
                 {row.label}
               </th>
-              <td className="py-3.5 font-semibold tabular-nums">
-                {kwh(withoutBattery[row.key])}
-              </td>
-              <td className="py-3.5 font-semibold tabular-nums">
-                {kwh(withBattery[row.key])}
-              </td>
+              <ValueCell
+                value={withoutBattery[row.key]}
+                total={productionKwh}
+                bar={row.bar}
+              />
+              <ValueCell
+                value={withBattery[row.key]}
+                total={productionKwh}
+                bar={row.bar}
+              />
             </tr>
           ))}
         </tbody>
       </table>
       <p className="text-sm text-text-muted">
-        Based on {kwh(battery.productionKwh)} of solar production in 2023 and{" "}
-        {kwh(battery.consumptionKwh)} of household use per year.
+        Bars are shares of the {kwh(productionKwh)} produced in 2023. Household
+        use: {kwh(battery.consumptionKwh)} per year.
       </p>
     </>
   );

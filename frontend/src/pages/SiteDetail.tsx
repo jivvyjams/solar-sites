@@ -79,7 +79,12 @@ export default function SiteDetail(): ReactElement {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={site.clientName} action={actions} />
+      <PageHeader
+        title={site.clientName}
+        subtitle={site.address}
+        backLink={{ to: "/", label: "Sites" }}
+        action={actions}
+      />
       {deleteError && <ErrorBanner message={deleteError} />}
       <SiteFacts site={site} />
       <ProductionSection siteId={id} />

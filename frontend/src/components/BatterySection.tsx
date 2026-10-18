@@ -60,7 +60,7 @@ export default function BatterySection({
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="flex flex-wrap items-end gap-4"
+        className="flex flex-wrap items-start gap-4"
       >
         <Field
           label="Battery capacity (kWh)"
@@ -78,7 +78,11 @@ export default function BatterySection({
           onChange={(e) => setAnnualUseKwh(e.target.value)}
           error={fieldErrors.annualUseKwh}
         />
-        <Button type="submit" loading={state.status === "loading"}>
+        <Button
+          type="submit"
+          loading={state.status === "loading"}
+          className="mt-6.5"
+        >
           Calculate
         </Button>
       </form>
