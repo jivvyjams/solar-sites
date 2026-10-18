@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { Link } from "react-router";
-import { PlusIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, PlusIcon } from "@phosphor-icons/react";
 import { listSites } from "../api/sites";
 import type { Site } from "../api/types";
 import { buttonClasses } from "../components/buttonClasses";
@@ -57,7 +57,7 @@ export default function Sites(): ReactElement {
             <li key={site.id}>
               <Link
                 to={`/sites/${site.id}`}
-                className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+                className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand transition-colors"
               >
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{site.clientName}</p>
@@ -65,13 +65,12 @@ export default function Sites(): ReactElement {
                     {site.address}
                   </p>
                 </div>
-                <div className="shrink-0 text-right">
-                  <p className="font-semibold">{site.peakKwp} kWp</p>
-                  <p className="text-sm text-text-muted">
-                    {site.roofAreaM2 === null
-                      ? "Roof area not set"
-                      : `${site.roofAreaM2} m²`}
-                  </p>
+                <div className="flex shrink-0 items-center gap-3 text-sm text-text-muted">
+                  <span className="tabular-nums">
+                    {site.peakKwp} kWp
+                    {site.roofAreaM2 !== null && ` · ${site.roofAreaM2} m²`}
+                  </span>
+                  <CaretRightIcon size={20} aria-hidden="true" />
                 </div>
               </Link>
             </li>
@@ -82,9 +81,13 @@ export default function Sites(): ReactElement {
     );
   }
 
+  const count = state.status === "success" ? state.sites.length : 0;
+  const subtitle =
+    count > 0 ? `${count} client ${count === 1 ? "site" : "sites"}` : undefined;
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Sites" action={addSite} />
+      <PageHeader title="Sites" subtitle={subtitle} action={addSite} />
       {content}
     </div>
   );
