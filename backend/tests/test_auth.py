@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from httpx import Response
 
 EMAIL = "ann@example.com"
-PASSWORD = "secret123"
+PASSWORD = "Secret123!"
 
 
 def register(client: TestClient, email: str = EMAIL) -> Response:
@@ -21,6 +21,14 @@ def test_register_duplicate_email_returns_409(client: TestClient) -> None:
     register(client)
     response = register(client, email="ANN@example.com")
     assert response.status_code == 409
+
+
+def test_register_weak_password_returns_422(client: TestClient) -> None:
+    response = client.post(
+        "/api/register", json={"email": EMAIL, "password": "secret123"}
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"][-1] == "password"
 
 
 def test_login_then_me_returns_email(client: TestClient) -> None:

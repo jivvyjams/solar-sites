@@ -7,11 +7,14 @@ import { useAuth } from "../auth/useAuth";
 import Button from "../components/Button";
 import ErrorBanner from "../components/ErrorBanner";
 import Field from "../components/Field";
+import PasswordField from "../components/PasswordField";
 
 export default function Register(): ReactElement {
   const { status, register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [confirmError, setConfirmError] = useState<string | undefined>();
   const [error, setError] = useState<ApiError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,6 +25,11 @@ export default function Register(): ReactElement {
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
+    setConfirmError(undefined);
+    if (password !== confirm) {
+      setConfirmError("Passwords do not match");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await register({ email, password });
@@ -39,9 +47,9 @@ export default function Register(): ReactElement {
   return (
     <main className="min-h-screen lg:flex">
       <section className="flex min-h-screen flex-col bg-surface px-7 py-10 sm:px-16 lg:w-lg lg:shrink-0">
-        <div className="flex items-center gap-2 font-display text-xl">
+        <div className="flex items-center gap-2 font-display text-2xl">
           <SolarPanelIcon
-            size={32}
+            size={48}
             weight="duotone"
             className="text-brand"
             aria-hidden="true"
@@ -68,20 +76,23 @@ export default function Register(): ReactElement {
               onChange={(e) => setEmail(e.target.value)}
               error={error?.fieldErrors.email}
             />
-            <Field
+            <PasswordField
               label="Password"
               id="password"
-              type="password"
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={error?.fieldErrors.password}
             />
-            <Button
-              type="submit"
-              loading={isSubmitting}
-              className="self-start"
-            >
+            <PasswordField
+              label="Confirm password"
+              id="confirm-password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              error={confirmError}
+            />
+            <Button type="submit" loading={isSubmitting} className="self-start">
               Register
             </Button>
           </form>

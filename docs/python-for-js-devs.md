@@ -90,6 +90,7 @@ seen = {1, 2, 3}                         # set = Set
 - No `++` or `--`; write `x += 1`.
 - Lists and dicts are references, like arrays and objects. `list(x)` or `dict(x)` makes a shallow copy.
 - A comprehension `[expr for item in iterable if cond]` is `iterable.filter(cond).map(expr)` in one expression. Dict version: `{k: v for k, v in pairs}`.
+- `any(cond for item in items)` is `True` as soon as one item passes; `all(...)` needs every item to pass. The part inside the parentheses is a generator expression: a comprehension without the brackets, which hands over one item at a time instead of building a list. `schemas.py` uses it to check a password: `any(c.isupper() for c in value)`.
 
 ## 5. Control flow and truthiness
 
@@ -197,6 +198,8 @@ def health() -> dict:
 
 A decorator is a function that receives the function written below it and returns a function, usually the same one after registering or wrapping it. `app.get("/health")` returns a decorator that registers `health` as the handler for that route. It is Express's `router.get("/health", health)` written upside down. `@pytest.fixture`, `@app.exception_handler(...)` and `@asynccontextmanager` have the same shape.
 
+Decorators stack and apply from the bottom up. In `schemas.py`, `@field_validator("password")` sits above `@classmethod`: `classmethod` first turns the function into one that receives the class as `cls` instead of an instance as `self` (Pydantic runs validators before any instance exists), then `field_validator` registers it for the `password` field. The function gets the value after the `Field(...)` constraints have passed, raises `ValueError` to reject it and returns it to accept it. Pydantic turns the `ValueError` into one entry of the 422 list, with `msg` prefixed by `Value error, `.
+
 ## 10. `with` and `yield`
 
 ```python
@@ -260,6 +263,7 @@ async def fetch_pvcalc(lat: float, lon: float, kwp: float) -> dict:
 | `arr.push(x)`                            | `arr.append(x)`                                     |
 | `arr.map(f)`                             | `[f(x) for x in arr]`                               |
 | `arr.filter(p)`                          | `[x for x in arr if p(x)]`                          |
+| `arr.some(p)`, `arr.every(p)`            | `any(p(x) for x in arr)`, `all(p(x) for x in arr)`  |
 | `arr.reduce((a, b) => a + b, 0)`         | `sum(arr)`                                          |
 | `obj.key`, `obj["key"]`                  | `d["key"]`, `d.get("key")`                          |
 | `Object.entries(o)`                      | `d.items()`                                         |

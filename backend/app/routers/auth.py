@@ -14,7 +14,7 @@ from app.auth import (
     verify_password,
 )
 from app.db import get_db
-from app.schemas import Credentials, MeOut
+from app.schemas import Credentials, MeOut, RegisterIn
 
 router = APIRouter(prefix="/api")
 
@@ -32,7 +32,7 @@ def set_session_cookie(response: Response, token: str) -> None:
 
 @router.post("/register", status_code=201)
 def register(
-    credentials: Credentials,
+    credentials: RegisterIn,
     response: Response,
     db: Annotated[sqlite3.Connection, Depends(get_db)],
 ) -> MeOut:

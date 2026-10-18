@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from pydantic.alias_generators import to_camel
 
 
@@ -9,6 +9,20 @@ class CamelModel(BaseModel):
 class Credentials(CamelModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+
+
+class RegisterIn(Credentials):
+    @field_validator("password")
+    @classmethod
+    def check_composition(cls, value: str) -> str:
+        has_upper = any(c.isupper() for c in value)
+        has_digit = any(c.isdigit() for c in value)
+        has_symbol = any(not c.isalnum() for c in value)
+        if not (has_upper and has_digit and has_symbol):
+            raise ValueError(
+                "Use at least one capital letter, one number and one symbol"
+            )
+        return value
 
 
 class MeOut(CamelModel):
