@@ -3,7 +3,7 @@ import { getProduction } from "../api/sites";
 import type { Production } from "../api/types";
 import { formatNumber } from "../lib/format";
 import MonthlyChart from "./MonthlyChart";
-import Spinner from "./Spinner";
+import Spinner from "../components/Spinner";
 
 type ProductionState =
   | { status: "loading" }

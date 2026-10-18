@@ -35,18 +35,18 @@
 
 ## 1. Timeline at a glance
 
-| Phase | Target                   | Outcome                                                                                 | Branch               |
-| ----- | ------------------------ | --------------------------------------------------------------------------------------- | -------------------- |
-| 0     | Wed 14 Oct (done)        | Clean repo, both toolchains run, working agreement committed                            | `main` (direct)      |
-| 1     | Thu 15 Oct (done)        | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on | `chore/skeleton`     |
-| 1b    | Thu 15 Oct (done)        | Design tokens plus `Button` and `Field`, one-hour timebox                               | `feat/design-system` |
-| 2     | Fri 16 Oct               | register/login/logout/me with CSRF; login/register pages; route guard; first tests      | `feat/auth`          |
-| 3     | Sat 17 Oct, morning      | Five site routes with ownership and validation; list/form/detail pages                  | `feat/sites`         |
-| 4     | Sat 17 Oct, afternoon    | PVGIS PVcalc → production endpoint + monthly chart                                      | `feat/production`    |
-| 5     | Sun 18 Oct, morning      | seriescalc + energy simulation → battery endpoint + calculator UI                       | `feat/battery`       |
-| 5b    | Sun 18 Oct, 14:30 to 20:30 | SiteDetail split into sections; PDOK address lookup; map beside the sites list; bounded polish (decision 58) | `refactor/site-detail`, `feat/detail-ui`, `feat/address-lookup`, `feat/map`, `feat/polish` |
-| 6     | Sun 18 Oct, evening; Mon morning | Tests complete, security pass, README, clean-clone Docker test                   | `chore/hardening`    |
-| 7     | Mon 19 Oct, before 12:00 | Rehearsal `quiz` on every phase, final review, tag `v1.0.0`, submit the link            | `main`               |
+| Phase | Target                           | Outcome                                                                                                      | Branch                                                                                     |
+| ----- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| 0     | Wed 14 Oct (done)                | Clean repo, both toolchains run, working agreement committed                                                 | `main` (direct)                                                                            |
+| 1     | Thu 15 Oct (done)                | `/api/health` + SPA served by FastAPI; Docker hand-in path proven; branch protection on                      | `chore/skeleton`                                                                           |
+| 1b    | Thu 15 Oct (done)                | Design tokens plus `Button` and `Field`, one-hour timebox                                                    | `feat/design-system`                                                                       |
+| 2     | Fri 16 Oct                       | register/login/logout/me with CSRF; login/register pages; route guard; first tests                           | `feat/auth`                                                                                |
+| 3     | Sat 17 Oct, morning              | Five site routes with ownership and validation; list/form/detail pages                                       | `feat/sites`                                                                               |
+| 4     | Sat 17 Oct, afternoon            | PVGIS PVcalc → production endpoint + monthly chart                                                           | `feat/production`                                                                          |
+| 5     | Sun 18 Oct, morning              | seriescalc + energy simulation → battery endpoint + calculator UI                                            | `feat/battery`                                                                             |
+| 5b    | Sun 18 Oct, 14:30 to 20:30       | SiteDetail split into sections; PDOK address lookup; map beside the sites list; bounded polish (decision 58) | `refactor/site-detail`, `feat/detail-ui`, `feat/address-lookup`, `feat/map`, `feat/polish` |
+| 6     | Sun 18 Oct, evening; Mon morning | Tests complete, security pass, README, clean-clone Docker test                                               | `chore/hardening`                                                                          |
+| 7     | Mon 19 Oct, before 12:00         | Rehearsal `quiz` on every phase, final review, tag `v1.0.0`, submit the link                                 | `main`                                                                                     |
 
 Day targets (set 16 Oct): phase 2 merged Friday night (backend by 13:00, frontend by 18:00, tests and review in
 the evening); phases 3 and 4 merged Saturday night; phases 5 and 6 merged Sunday night. Monday morning is the
@@ -66,81 +66,81 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Phase 2, auth**
 
-| File | Tier | Note |
-| --- | --- | --- |
-| `backend/app/db.py` | T | `connect`, `init_db`, `get_db`; new: `sqlite3`, `yield` dependency |
-| `backend/app/schemas.py` | T | Pydantic models; grows per phase |
-| `backend/app/auth.py` | T | argon2, `create_session`, `current_user`, `require_csrf` |
-| `backend/app/routers/auth.py` | T | register, login, logout, me |
-| `backend/app/main.py` | T | include router, call `init_db` |
-| `backend/tests/conftest.py` and the first two tests in `test_auth.py` | T | fixtures and TestClient are the concept |
-| rest of `backend/tests/test_auth.py` | T | |
-| `frontend/src/api/types.ts` | D | mirrors the contract |
-| `frontend/src/api/client.ts` (CSRF header, 422 field map) | T | small edit, one concept |
-| `frontend/src/api/auth.ts` | T | four short functions |
-| `frontend/src/auth/AuthContext.tsx` | T | React context |
-| `frontend/src/pages/Login.tsx` | T | first form page sets the pattern |
-| `frontend/src/pages/Register.tsx` | D | second instance |
-| `RequireAuth` and the route table in `App.tsx` / `main.tsx` | T | Router 7 layout routes |
-| `frontend/src/components/NavBar.tsx` | D | |
+| File                                                                  | Tier | Note                                                               |
+| --------------------------------------------------------------------- | ---- | ------------------------------------------------------------------ |
+| `backend/app/db.py`                                                   | T    | `connect`, `init_db`, `get_db`; new: `sqlite3`, `yield` dependency |
+| `backend/app/schemas.py`                                              | T    | Pydantic models; grows per phase                                   |
+| `backend/app/auth.py`                                                 | T    | argon2, `create_session`, `current_user`, `require_csrf`           |
+| `backend/app/routers/auth.py`                                         | T    | register, login, logout, me                                        |
+| `backend/app/main.py`                                                 | T    | include router, call `init_db`                                     |
+| `backend/tests/conftest.py` and the first two tests in `test_auth.py` | T    | fixtures and TestClient are the concept                            |
+| rest of `backend/tests/test_auth.py`                                  | T    |                                                                    |
+| `frontend/src/api/types.ts`                                           | D    | mirrors the contract                                               |
+| `frontend/src/api/client.ts` (CSRF header, 422 field map)             | T    | small edit, one concept                                            |
+| `frontend/src/api/auth.ts`                                            | T    | four short functions                                               |
+| `frontend/src/auth/AuthContext.tsx`                                   | T    | React context                                                      |
+| `frontend/src/pages/Login.tsx`                                        | T    | first form page sets the pattern                                   |
+| `frontend/src/pages/Register.tsx`                                     | D    | second instance                                                    |
+| `RequireAuth` and the route table in `App.tsx` / `main.tsx`           | T    | Router 7 layout routes                                             |
+| `frontend/src/components/NavBar.tsx`                                  | D    |                                                                    |
 
 **Phase 3, sites**
 
-| File | Tier |
-| --- | --- |
-| `db.py` sites table | T |
-| `schemas.py` `SiteIn` / `SiteOut` | T |
-| `routers/sites.py`: `get_owned_site`, list, create, get | T |
-| `routers/sites.py`: put, delete | T |
-| `tests/test_sites.py` | T |
-| `api/sites.ts` | D |
-| `components/PageHeader.tsx`, `ErrorBanner.tsx`, `EmptyState.tsx`, `Spinner.tsx` | D |
-| `pages/Sites.tsx` (list with loading, error, empty) | T, from an L4 outline |
-| `pages/SiteForm.tsx`, `pages/SiteDetail.tsx` | D |
+| File                                                                            | Tier                  |
+| ------------------------------------------------------------------------------- | --------------------- |
+| `db.py` sites table                                                             | T                     |
+| `schemas.py` `SiteIn` / `SiteOut`                                               | T                     |
+| `routers/sites.py`: `get_owned_site`, list, create, get                         | T                     |
+| `routers/sites.py`: put, delete                                                 | T                     |
+| `tests/test_sites.py`                                                           | T                     |
+| `api/sites.ts`                                                                  | D                     |
+| `components/PageHeader.tsx`, `ErrorBanner.tsx`, `EmptyState.tsx`, `Spinner.tsx` | D                     |
+| `pages/Sites.tsx` (list with loading, error, empty)                             | T, from an L4 outline |
+| `pages/SiteForm.tsx`, `pages/SiteDetail.tsx`                                    | D                     |
 
 **Phase 4, production**
 
-| File | Tier |
-| --- | --- |
-| `pvgis.py`: `fetch_pvcalc`, error mapping, `lru_cache`, mapping helper | T |
-| production route | T |
-| `schemas.py` production model | T |
-| `tests/fixtures/pvcalc.json` (fetched with curl), `tests/test_production.py` | T |
-| `api/sites.ts` `getProduction`, `components/MonthlyChart.tsx`, production section | D |
+| File                                                                              | Tier |
+| --------------------------------------------------------------------------------- | ---- |
+| `pvgis.py`: `fetch_pvcalc`, error mapping, `lru_cache`, mapping helper            | T    |
+| production route                                                                  | T    |
+| `schemas.py` production model                                                     | T    |
+| `tests/fixtures/pvcalc.json` (fetched with curl), `tests/test_production.py`      | T    |
+| `api/sites.ts` `getProduction`, `components/MonthlyChart.tsx`, production section | D    |
 
 **Phase 5, battery**
 
-| File | Tier |
-| --- | --- |
-| `pvgis.py` `fetch_seriescalc` | T |
-| `energy.py` `simulate` | T |
-| battery route with `Query` aliases | T |
-| `tests/test_energy.py` (4-hour hand-computed series, balance on a real PVGIS day) | T |
-| `schemas.py` battery models | T |
-| battery form, gain tile, comparison table in `SiteDetail.tsx` | D |
+| File                                                                              | Tier |
+| --------------------------------------------------------------------------------- | ---- |
+| `pvgis.py` `fetch_seriescalc`                                                     | T    |
+| `energy.py` `simulate`                                                            | T    |
+| battery route with `Query` aliases                                                | T    |
+| `tests/test_energy.py` (4-hour hand-computed series, balance on a real PVGIS day) | T    |
+| `schemas.py` battery models                                                       | T    |
+| battery form, gain tile, comparison table in `SiteDetail.tsx`                     | D    |
 
 **Phase 5b, stretch**
 
-| File | Tier |
-| --- | --- |
-| `lib/format.ts`, `SiteFacts.tsx`, `ProductionSection.tsx`, `BatterySection.tsx`, `BatteryResult.tsx` (moved out of `SiteDetail.tsx`) | T |
-| `PageHeader` subtitle and back link; `SiteFacts` as one row; battery share bars | T |
-| `pdok.py`, `routers/address.py`, `schemas.py` `AddressOut`, `tests/test_address.py` | T |
-| `api/address.ts`, `components/AddressLookup.tsx`, `SiteForm.tsx` wiring | T |
-| `components/SitesMap.tsx`, `Sites.tsx` grid | T |
-| Polish list (decision 62) | T |
+| File                                                                                                                                 | Tier |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---- |
+| `lib/format.ts`, `SiteFacts.tsx`, `ProductionSection.tsx`, `BatterySection.tsx`, `BatteryResult.tsx` (moved out of `SiteDetail.tsx`) | T    |
+| `PageHeader` subtitle and back link; `SiteFacts` as one row; battery share bars                                                      | T    |
+| `pdok.py`, `routers/address.py`, `schemas.py` `AddressOut`, `tests/test_address.py`                                                  | T    |
+| `api/address.ts`, `components/AddressLookup.tsx`, `SiteForm.tsx` wiring                                                              | T    |
+| `components/SitesMap.tsx`, `Sites.tsx` grid                                                                                          | T    |
+| Polish list (decision 62)                                                                                                            | T    |
 
 **Phase 6, hardening**
 
-| Item | Tier |
-| --- | --- |
-| Security pass: `review` and `/security-review`; fixes applied in D files, explained for T files | mixed |
-| Test gaps against §0 | T |
-| `README.md` body (run, stack, auth and CSRF, model, PVGIS, limits) from `backend-stack.md` and this plan | D, user edits the voice |
-| README AI-usage paragraph | T, user's words |
-| `.github/workflows/ci.yml` (docker build) | D, only if under ten minutes |
-| Clean-clone Docker test | user runs |
-| Design polish, one hour | D, user reviews visually |
+| Item                                                                                                     | Tier                         |
+| -------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Security pass: `review` and `/security-review`; fixes applied in D files, explained for T files          | mixed                        |
+| Test gaps against §0                                                                                     | T                            |
+| `README.md` body (run, stack, auth and CSRF, model, PVGIS, limits) from `backend-stack.md` and this plan | D, user edits the voice      |
+| README AI-usage paragraph                                                                                | T, user's words              |
+| `.github/workflows/ci.yml` (docker build)                                                                | D, only if under ten minutes |
+| Clean-clone Docker test                                                                                  | user runs                    |
+| Design polish, one hour                                                                                  | D, user reviews visually     |
 
 ### Phase 0: Reset and setup (Wed 14 Oct)
 
@@ -352,11 +352,11 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Acceptance**
 
-- [ ] Site page renders identically after the split; `npm run build` and `npm run lint` clean.
-- [ ] Header, facts row and share bars match the mockup's intent with tokens only.
-- [ ] Lookup `2513AA` / `1` fills "Binnenhof 1, 2513AA 's-Gravenhage", 52.079, 4.312; `2517AS` / `120` shows the no-address message; `12345` shows a message under the postcode field.
-- [ ] Map shows one pin per site, the popup link opens the site, one site does not zoom to street level, the map stacks under the list on a narrow window.
-- [ ] `pytest -q` 25 passed; `docker build` succeeds with the new packages.
+- [x] Site page renders identically after the split; `npm run build` and `npm run lint` clean.
+- [x] Header, facts row and share bars match the mockup's intent with tokens only.
+- [x] Lookup `2513AA` / `1` fills "Binnenhof 1, 2513AA 's-Gravenhage", 52.079, 4.312; `2517AS` / `120` shows the no-address message; `12345` shows a message under the postcode field.
+- [x] Map shows one pin per site, the popup link opens the site, one site does not zoom to street level, the map stacks under the list on a narrow window.
+- [x] `pytest -q` 25 passed; `docker build` succeeds with the new packages.
 
 **Learn first:** `Query(pattern=...)`; Solr field queries (`field:value AND field:value`); WKT `POINT(lon lat)`; Leaflet containers need an explicit height; React portals (a `Link` inside a Leaflet popup); SVG presentation attributes versus CSS classes.
 **Interview angles:** why the lookup goes through the backend (validation first, our own messages, one pattern for every third party); why 422 for "no address found"; why the field-scoped PDOK query; why `CircleMarker` and what that costs in keyboard access; what the tile host learns from the browser; why section components own their request state.
@@ -382,10 +382,10 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 ### 3.1 Data model
 
-| Table      | Columns                                                                                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null |
-| `sessions` | `token` text PK; `csrf_token` text not null; `user_id` FK users.id; `created_at` (UTC ISO text; expiry is `created_at` + 7 days, decision 20) |
+| Table      | Columns                                                                                                                                                         |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`    | `id` UUID PK; `email` text unique not null (stored lowercased); `password_hash` text not null                                                                   |
+| `sessions` | `token` text PK; `csrf_token` text not null; `user_id` FK users.id; `created_at` (UTC ISO text; expiry is `created_at` + 7 days, decision 20)                   |
 | `sites`    | `id` UUID PK; `user_id` FK users.id (indexed); `client_name` text; `address` text; `latitude` real; `longitude` real; `roof_area_m2` real null; `peak_kwp` real |
 
 Python attribute names are snake_case; JSON field names are camelCase through Pydantic aliases. Never expose `password_hash`, `token`, `csrf_token` of other sessions, or `user_id`.
@@ -394,19 +394,19 @@ Ids (decision 12): generated in Python with `uuid4()` and stored in SQLite as `T
 
 ### 3.2 HTTP status codes (decision 9 in CLAUDE.md)
 
-| Route                            | Success                           | Failures                                                                                         |
-| -------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `POST /api/register`             | 201 `{email, csrfToken}` + cookie | 409 email exists; 422 invalid email or password                                                  |
-| `POST /api/login`                | 200 `{email, csrfToken}` + cookie | 401 wrong credentials (one message for both cases); 422 malformed body                           |
-| `POST /api/logout`               | 204, cookie cleared               | 401 no session; 403 missing or wrong CSRF header                                                 |
-| `GET /api/me`                    | 200 `{email, csrfToken}`          | 401                                                                                              |
-| `GET /api/sites`                 | 200 `[site]`                      | 401                                                                                              |
-| `POST /api/sites`                | 201 site                          | 401; 403 CSRF; 422 per-field                                                                     |
-| `GET /api/sites/{id}`            | 200 site                          | 401; 404 not found or not the caller's                                                           |
-| `PUT /api/sites/{id}`            | 200 site                          | 401; 403 CSRF; 404; 422 per-field                                                                |
-| `DELETE /api/sites/{id}`         | 204                               | 401; 403 CSRF; 404                                                                               |
-| `GET /api/sites/{id}/production` | 200 `{yearlyKwh, monthlyKwh}`     | 401; 404; 422 PVGIS has no data for the location; 502 any other PVGIS failure, timeouts included |
-| `GET /api/sites/{id}/battery`    | 200 (§3.5)                        | 401; 404; 422 bad query or no data; 502                                                          |
+| Route                            | Success                              | Failures                                                                                              |
+| -------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `POST /api/register`             | 201 `{email, csrfToken}` + cookie    | 409 email exists; 422 invalid email or password                                                       |
+| `POST /api/login`                | 200 `{email, csrfToken}` + cookie    | 401 wrong credentials (one message for both cases); 422 malformed body                                |
+| `POST /api/logout`               | 204, cookie cleared                  | 401 no session; 403 missing or wrong CSRF header                                                      |
+| `GET /api/me`                    | 200 `{email, csrfToken}`             | 401                                                                                                   |
+| `GET /api/sites`                 | 200 `[site]`                         | 401                                                                                                   |
+| `POST /api/sites`                | 201 site                             | 401; 403 CSRF; 422 per-field                                                                          |
+| `GET /api/sites/{id}`            | 200 site                             | 401; 404 not found or not the caller's                                                                |
+| `PUT /api/sites/{id}`            | 200 site                             | 401; 403 CSRF; 404; 422 per-field                                                                     |
+| `DELETE /api/sites/{id}`         | 204                                  | 401; 403 CSRF; 404                                                                                    |
+| `GET /api/sites/{id}/production` | 200 `{yearlyKwh, monthlyKwh}`        | 401; 404; 422 PVGIS has no data for the location; 502 any other PVGIS failure, timeouts included      |
+| `GET /api/sites/{id}/battery`    | 200 (§3.5)                           | 401; 404; 422 bad query or no data; 502                                                               |
 | `GET /api/address-lookup`        | 200 `{address, latitude, longitude}` | 401; 422 malformed postcode or house number, or no address found; 502 PDOK unavailable or any non-200 |
 
 Why 404 and not 403 for another user's site: the response must not reveal that the id exists. Why 422 for a path id that is not a well-formed UUID: it is a malformed request, not a missing resource, and FastAPI produces it automatically. Why 422 for validation: FastAPI's default and semantically "well-formed but unprocessable". Why 403 for CSRF: the session is valid but the request is not authorised in this form.
@@ -454,14 +454,19 @@ src/
   api/client.ts             request<T>(): JSON headers, X-CSRF-Token, ApiError with fieldErrors
   api/types.ts              Site, SiteInput, Production, BatteryResult, ApiError (mirror the contract)
   api/auth.ts  api/sites.ts  api/address.ts  one function per route; the only files that call request()
-  auth/AuthContext.tsx      status, email, csrfToken, login/register/logout; /api/me on mount
+  auth/                     AuthProvider (status, email, login/register/logout; /api/me on mount), useAuth, RequireAuth
+  sites/                    domain components: own their request state, call src/api/*, render contract types (decision 59):
+                            SiteFacts, ProductionSection, BatterySection, BatteryResult, MonthlyChart, AddressLookup, SitesMap
+  components/               design system only, never imports from api/: Button (+ buttonClasses), Field, PageHeader,
+                            ErrorBanner, EmptyState, Spinner, NavBar
   pages/  Login, Register, Sites (list + SitesMap), SiteForm (AddressLookup + fields), SiteDetail (header + three sections)
-  components/               base: Button, Field, PageHeader, ErrorBanner, EmptyState, Spinner, NavBar
-                            sections (own their request state, call src/api/*): SiteFacts, ProductionSection,
-                            BatterySection, BatteryResult, MonthlyChart, AddressLookup, SitesMap (decision 59)
   index.css                 @import "tailwindcss"; plus the @theme token block (§3.8)
   lib/format.ts             number formatting (Intl.NumberFormat)
 ```
+
+Folder rule (decision 63): a file that imports from `src/api/` knows the domain and lives in `auth/` or `sites/`;
+`components/` never imports from `api/`. The phase tables above name the seven `sites/` files under their pre-move
+`components/` path.
 
 Design: the system in §3.8. Every async view has loading, error and empty states, forms show server errors under fields, destructive actions confirm. Light mode only.
 

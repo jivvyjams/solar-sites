@@ -3,10 +3,10 @@ import { ApiError } from "../api/client";
 import { getBattery } from "../api/sites";
 import type { Battery } from "../api/types";
 import BatteryResult from "./BatteryResult";
-import Button from "./Button";
-import ErrorBanner from "./ErrorBanner";
-import Field from "./Field";
-import Spinner from "./Spinner";
+import Button from "../components/Button";
+import ErrorBanner from "../components/ErrorBanner";
+import Field from "../components/Field";
+import Spinner from "../components/Spinner";
 
 type BatteryState =
   | { status: "idle" }
@@ -65,7 +65,7 @@ export default function BatterySection({
         <Field
           label="Battery capacity (kWh)"
           id="capacityKwh"
-          className="w-50"
+          className="w-full md:w-50"
           value={capacityKwh}
           onChange={(e) => setCapacityKwh(e.target.value)}
           error={fieldErrors.capacityKwh}
@@ -73,7 +73,7 @@ export default function BatterySection({
         <Field
           label="Annual electricity use (kWh)"
           id="annualUseKwh"
-          className="w-60"
+          className="w-full md:w-50"
           value={annualUseKwh}
           onChange={(e) => setAnnualUseKwh(e.target.value)}
           error={fieldErrors.annualUseKwh}

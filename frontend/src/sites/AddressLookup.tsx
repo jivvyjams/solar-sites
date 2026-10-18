@@ -3,9 +3,9 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { lookupAddress } from "../api/address";
 import { ApiError } from "../api/client";
 import type { FoundAddress } from "../api/types";
-import Button from "./Button";
-import ErrorBanner from "./ErrorBanner";
-import Field from "./Field";
+import Button from "../components/Button";
+import ErrorBanner from "../components/ErrorBanner";
+import Field from "../components/Field";
 
 type LookupState =
   | { status: "idle" }

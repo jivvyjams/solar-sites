@@ -8,11 +8,11 @@ export default function NavBar(): ReactElement {
   const { email, logout } = useAuth();
 
   return (
-    <header className="bg-surface shadow-card">
+    <header className="sticky top-0 z-10 border-b border-border bg-surface shadow-card">
       <nav className="mx-auto max-w-6xl px-7 h-16 flex items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-2 font-display text-xl rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="flex items-center gap-2 font-display text-xl rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand whitespace-nowrap"
         >
           <SolarPanelIcon
             size={32}
@@ -23,7 +23,9 @@ export default function NavBar(): ReactElement {
           Solar Sites
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-text-muted">{email}</span>
+          <span className="hidden text-sm text-text-muted sm:inline">
+            {email}
+          </span>
           <Button variant="secondary" onClick={logout}>
             <SignOutIcon size={16} aria-hidden="true" />
             Log out

@@ -3,13 +3,13 @@ import { Link, useNavigate, useParams } from "react-router";
 import { PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { deleteSite, getSite } from "../api/sites";
 import type { Site } from "../api/types";
-import BatterySection from "../components/BatterySection";
+import BatterySection from "../sites/BatterySection";
 import Button from "../components/Button";
 import { buttonClasses } from "../components/buttonClasses";
 import ErrorBanner from "../components/ErrorBanner";
 import PageHeader from "../components/PageHeader";
-import ProductionSection from "../components/ProductionSection";
-import SiteFacts from "../components/SiteFacts";
+import ProductionSection from "../sites/ProductionSection";
+import SiteFacts from "../sites/SiteFacts";
 import Spinner from "../components/Spinner";
 
 type PageState =
