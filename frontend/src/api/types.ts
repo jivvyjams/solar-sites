@@ -45,3 +45,9 @@ export type Battery = {
   withBattery: EnergyTotals;
   batteryGainKwh: number;
 };
+
+export type FoundAddress = {
+  address: string;
+  latitude: number;
+  longitude: number;
+};

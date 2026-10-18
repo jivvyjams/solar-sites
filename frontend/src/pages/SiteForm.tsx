@@ -7,7 +7,8 @@ import {
 import { Link, useNavigate, useParams } from "react-router";
 import { ApiError } from "../api/client";
 import { createSite, getSite, updateSite } from "../api/sites";
-import type { Site, SiteInput } from "../api/types";
+import type { FoundAddress, Site, SiteInput } from "../api/types";
+import AddressLookup from "../components/AddressLookup";
 import Button from "../components/Button";
 import { buttonClasses } from "../components/buttonClasses";
 import ErrorBanner from "../components/ErrorBanner";
@@ -90,6 +91,15 @@ export default function SiteForm(): ReactElement {
     setValues((current) => ({ ...current, [name]: value }));
   }
 
+  function fillFromLookup(found: FoundAddress): void {
+    setValues((current) => ({
+      ...current,
+      address: found.address,
+      latitude: String(found.latitude),
+      longitude: String(found.longitude),
+    }));
+  }
+
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
@@ -121,65 +131,68 @@ export default function SiteForm(): ReactElement {
     content = <Spinner label="Loading site" />;
   } else {
     content = (
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        className="flex max-w-2xl flex-col gap-6 rounded-card bg-surface p-6 shadow-card"
-      >
-        {error && <ErrorBanner message={error.message} />}
-        <Field
-          label="Client name"
-          id="clientName"
-          value={values.clientName}
-          onChange={(e) => setField("clientName", e.target.value)}
-          error={error?.fieldErrors.clientName}
-        />
-        <Field
-          label="Address"
-          id="address"
-          value={values.address}
-          onChange={(e) => setField("address", e.target.value)}
-          error={error?.fieldErrors.address}
-        />
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex max-w-2xl flex-col gap-6 rounded-card bg-surface p-6 shadow-card">
+        <AddressLookup onFound={fillFromLookup} />
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex flex-col gap-6 border-t border-border pt-6"
+        >
+          {error && <ErrorBanner message={error.message} />}
           <Field
-            label="Latitude"
-            id="latitude"
-            value={values.latitude}
-            onChange={(e) => setField("latitude", e.target.value)}
-            error={error?.fieldErrors.latitude}
+            label="Client name"
+            id="clientName"
+            value={values.clientName}
+            onChange={(e) => setField("clientName", e.target.value)}
+            error={error?.fieldErrors.clientName}
           />
           <Field
-            label="Longitude"
-            id="longitude"
-            value={values.longitude}
-            onChange={(e) => setField("longitude", e.target.value)}
-            error={error?.fieldErrors.longitude}
+            label="Address"
+            id="address"
+            value={values.address}
+            onChange={(e) => setField("address", e.target.value)}
+            error={error?.fieldErrors.address}
           />
-          <Field
-            label="Peak power (kWp)"
-            id="peakKwp"
-            value={values.peakKwp}
-            onChange={(e) => setField("peakKwp", e.target.value)}
-            error={error?.fieldErrors.peakKwp}
-          />
-          <Field
-            label="Roof area (m², optional)"
-            id="roofAreaM2"
-            value={values.roofAreaM2}
-            onChange={(e) => setField("roofAreaM2", e.target.value)}
-            error={error?.fieldErrors.roofAreaM2}
-          />
-        </div>
-        <div className="flex justify-end gap-3">
-          <Link to={cancelTo} className={buttonClasses("secondary")}>
-            Cancel
-          </Link>
-          <Button type="submit" loading={isSubmitting}>
-            Save site
-          </Button>
-        </div>
-      </form>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Latitude"
+              id="latitude"
+              value={values.latitude}
+              onChange={(e) => setField("latitude", e.target.value)}
+              error={error?.fieldErrors.latitude}
+            />
+            <Field
+              label="Longitude"
+              id="longitude"
+              value={values.longitude}
+              onChange={(e) => setField("longitude", e.target.value)}
+              error={error?.fieldErrors.longitude}
+            />
+            <Field
+              label="Peak power (kWp)"
+              id="peakKwp"
+              value={values.peakKwp}
+              onChange={(e) => setField("peakKwp", e.target.value)}
+              error={error?.fieldErrors.peakKwp}
+            />
+            <Field
+              label="Roof area (m², optional)"
+              id="roofAreaM2"
+              value={values.roofAreaM2}
+              onChange={(e) => setField("roofAreaM2", e.target.value)}
+              error={error?.fieldErrors.roofAreaM2}
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Link to={cancelTo} className={buttonClasses("secondary")}>
+              Cancel
+            </Link>
+            <Button type="submit" loading={isSubmitting}>
+              Save site
+            </Button>
+          </div>
+        </form>
+      </div>
     );
   }
 
