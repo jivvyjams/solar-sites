@@ -363,7 +363,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 ### Phase 6: Hardening, tests, README (Sun 18 Oct, evening; Mon morning)
 
-1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Done 18 Oct (decision 65): `roofAreaM2` capped with `le=1_000_000`; the open question in CLAUDE.md §10 (422 bodies echo the input, `NaN` body gives 500) still needs a decision.
+1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Done 18 Oct (decision 65): `roofAreaM2` capped with `le=1_000_000`; the §10 question (422 bodies echoed the input, a `NaN` body gave a 500) is resolved by one handler in `main.py` (decision 66).
 2. Tests: close the gaps against §0. `pytest -q` green. `ruff check .` and `ruff format --check .` clean. `npm run lint` and `npm run build` clean.
 3. Session expiry enforced, expired rows deleted on login (if not done in phase 2).
 4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement. Last section: References, with the sources behind the model's assumptions (decision 55).
@@ -414,7 +414,7 @@ Why 404 and not 403 for another user's site: the response must not reveal that t
 ### 3.3 Error body
 
 - Single message: `{"detail": "Email already registered"}` (FastAPI's `HTTPException` default, zero extra code).
-- Validation: FastAPI's default 422 body, unchanged (decision 10): `{"detail": [{"type": "...", "loc": ["body", "latitude"], "msg": "Input should be less than or equal to 90", ...}, ...]}`. One entry per invalid field, which is the brief's "message per field". The frontend takes the last element of `loc` as the field name (already camelCase because of the alias) and shows `msg` under that input. `detail` is a string for other errors and a list here, so the fetch wrapper checks which it got.
+- Validation: `{"detail": [{"loc": ["body", "latitude"], "msg": "Input should be less than or equal to 90"}, ...]}`, written by the one `RequestValidationError` handler in `main.py` (decision 66, amends 10): FastAPI's default list minus `input`, `type` and `ctx`, so a rejected password is never echoed and a `NaN` in the body cannot crash the handler. One entry per invalid field, which is the brief's "message per field". The frontend takes the last element of `loc` as the field name (already camelCase because of the alias) and shows `msg` under that input. `detail` is a string for other errors and a list here, so the fetch wrapper checks which it got.
 
 ### 3.4 PVGIS facts (verified with curl on 14 Oct 2026)
 
