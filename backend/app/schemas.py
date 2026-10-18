@@ -54,3 +54,9 @@ class BatteryOut(CamelModel):
     without_battery: EnergyTotals
     with_battery: EnergyTotals
     battery_gain_kwh: float
+
+
+class AddressOut(CamelModel):
+    address: str
+    latitude: float
+    longitude: float
