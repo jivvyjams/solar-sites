@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { Production, Site, SiteInput } from "./types";
+import type { Battery, Production, Site, SiteInput } from "./types";
 
 function sitePath(id: string): string {
   return `/api/sites/${encodeURIComponent(id)}`;
@@ -27,4 +27,13 @@ export function deleteSite(id: string): Promise<void> {
 
 export function getProduction(id: string): Promise<Production> {
   return request<Production>(`${sitePath(id)}/production`);
+}
+
+export function getBattery(
+  id: string,
+  capacityKwh: string,
+  annualUseKwh: string,
+): Promise<Battery> {
+  const query = new URLSearchParams({ capacityKwh, annualUseKwh });
+  return request<Battery>(`${sitePath(id)}/battery?${query}`);
 }

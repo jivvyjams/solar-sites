@@ -111,10 +111,10 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 | File | Tier |
 | --- | --- |
-| `pvgis.py` `fetch_hourly` | T |
+| `pvgis.py` `fetch_seriescalc` | T |
 | `energy.py` `simulate` | T |
 | battery route with `Query` aliases | T |
-| `tests/test_energy.py` (24-hour hand-computed series, balance) | T |
+| `tests/test_energy.py` (4-hour hand-computed series, balance on a real PVGIS day) | T |
 | `schemas.py` battery models | T |
 | battery form, gain tile, comparison table in `SiteDetail.tsx` | D |
 
@@ -301,9 +301,9 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **Backend**
 
-1. `pvgis.py`: `fetch_hourly(lat, lon, kwp)`, same shape as `fetch_pvcalc`, calls seriescalc with `pvcalculation=1`, `loss=14`, `optimalangles=1`, `startyear=2023`, `endyear=2023`, `outputformat=json` and returns 8760 kWh values in order (`P` in W ÷ 1000). Same `@lru_cache`; this call takes 5 to 10 s, so the cache matters here.
-2. `energy.py` (pure, no I/O, no FastAPI imports): `simulate(production, annual_use_kwh, capacity_kwh, round_trip_efficiency=0.9) -> dict`. Consumption in every hour is `annual_use_kwh / 8760` (flat profile, §3.5). Walk the year hour by hour and return the totals. Run it twice (capacity 0 and capacity N).
-3. Query validation: `capacityKwh` ≥ 0 and `annualUseKwh` > 0, both required, declared as typed query parameters with `Query(ge=..., gt=...)` and camelCase aliases.
+1. `pvgis.py`: `fetch_seriescalc(lat, lon, kwp)`, same shape as `fetch_pvcalc`, calls seriescalc with `pvcalculation=1`, `loss=14`, `optimalangles=1`, `startyear=2023`, `endyear=2023`, `outputformat=json` and returns 8760 kWh values in order (`P` in W ÷ 1000). Same `@lru_cache`; this call takes 5 to 10 s, so the cache matters here.
+2. `energy.py` (pure, no I/O, no FastAPI imports), per decision 54: `hourly_use(annual_use_kwh, hours) -> list[float]` spreads annual use over the hours with PVGIS's default 24-hour profile (profile hour = UTC hour + 1); `simulate(production, use, capacity_kwh) -> dict` walks the year hour by hour and returns the three totals. Run it twice (capacity 0 and capacity N).
+3. Query validation: `capacityKwh` 0 to 1000 and `annualUseKwh` above 0 up to 1,000,000, both required, declared as typed query parameters with `Query(ge=..., gt=..., le=...)` and camelCase aliases. The upper bounds also reject `inf` and `1e400`, which pass a lower bound alone and come back as `null` (decision 56).
 4. `routers/sites.py`: owned site → cached hourly data → simulate → response model.
 
 **Frontend**
@@ -311,23 +311,23 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 1. `src/api/sites.ts`: `getBattery(id, capacityKwh, annualUseKwh)`.
 2. Site page section: a small form (capacity kWh, annual use kWh, sensible defaults such as 5 and 3500), results side by side for without and with battery (self-used, imported, exported), and a headline "The battery adds X kWh of self-used solar per year".
 
-**Tests:** a hand-made 24-hour series with round numbers whose answers you can compute on paper; capacity 0 equals the without-battery result; energy balance holds (production = self-used + export; consumption = self-used + import).
+**Tests:** a hand-made 4-hour series with round numbers whose answers you can compute on paper (capacity 0, and capacity 1 to show the cap and the 10 % loss); energy balance on the 24-hour fixture day (consumption = self-used + import; self-used + export < production, the gap being battery loss and charge left at the end); the route returns the camelCase comparison and a 422 for a negative capacity.
 
 **Acceptance**
 
-- [ ] Results move sensibly with capacity (0 equals without; very large plateaus).
-- [ ] Balance assertions pass.
-- [ ] README section on the model written.
+- [x] Results move sensibly with capacity (0 equals without; very large plateaus). The Hague, 5 kWp, 3500 kWh: self-used 1011 at 0 kWh, 2312 at 5, 2774 at 10, 2879 at 20, 3344 at 1000.
+- [x] Balance assertions pass.
+- [ ] README section on the model written: moved to phase 6 item 4, where the README is written from scratch (decision 55).
 
 **Learn first:** time-series simulation and state of charge; floating point rounding; keeping pure functions apart from I/O; FastAPI `Query` validation; nested Pydantic response models.
-**Interview angles:** why a flat profile and what it ignores (daily shape, seasons, time zone, battery power limits, degradation); where the efficiency loss is applied and why.
+**Interview angles:** why PVGIS's household profile and what it ignores (seasons, weekends, summer time, differences between households, battery power limits, degradation); why the profile hour is the UTC hour + 1; where the efficiency loss is applied and why; why capacity 0 needs no special case.
 
 ### Phase 6: Hardening, tests, README (Sun 18 Oct, afternoon)
 
-1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why.
+1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Known gap (found 18 Oct): `roofAreaM2` has only `gt=0`, so `1e400` is stored as infinity and returned as `null`; add an `le=` like the other numeric fields.
 2. Tests: close the gaps against §0. `pytest -q` green. `ruff check .` and `ruff format --check .` clean. `npm run lint` and `npm run build` clean.
 3. Session expiry enforced, expired rows deleted on login (if not done in phase 2).
-4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement.
+4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement. Last section: References, with the sources behind the model's assumptions (decision 55).
 5. Clean-clone test: `git clone` into a temp dir, `docker build`, `docker run`, walk the manual script in §6 with two users in private windows.
 6. CI: one `docker build` job, drafted only if it takes under ten minutes (decision 42). Security headers middleware: cut (decision 42).
 7. Design polish pass, one-hour timebox (decision 42): spacing consistency, every state on every page, the chart, the battery comparison, empty states. Candidates noted 15 Oct: a 1px card border like praeter.energy, hover transitions on cards and buttons (`transition-shadow`, `transition-colors`). Stop when the timer ends.
@@ -387,23 +387,23 @@ Why 404 and not 403 for another user's site: the response must not reveal that t
 
 ### 3.5 Battery response and consumption model
 
-Response (contract fields first, the "…" filled in by us):
+Response (contract fields first, the "…" filled in by us; numbers for The Hague, 5 kWp, 3500 kWh, 5 kWh battery):
 
 ```
 {
-  "productionKwh": 5341.0,
+  "productionKwh": 5337.6,
   "consumptionKwh": 3500.0,
   "capacityKwh": 5.0,
   "withoutBattery": { "selfUsedKwh", "gridImportKwh", "gridExportKwh" },
   "withBattery":    { "selfUsedKwh", "gridImportKwh", "gridExportKwh" },
-  "batteryGainKwh": 812.4
+  "batteryGainKwh": 1300.2
 }
 ```
 
 - `batteryGainKwh` = with − without self-used. Percentages, if the UI wants them, are one division in the frontend.
-- Consumption model (decision 14): flat. `annualUseKwh / 8760` in every hour of the year. Rationale for the README: PVGIS gives no load data; the brief allows a simple stated assumption; a flat profile is transparent and has no parameters to defend; the battery effect is still visible because night-time use must be imported from the grid without storage. State what it ignores: the daily shape of household use (morning and evening peaks), seasons, weekends, and the UTC timestamps of PVGIS.
-- Battery simulation per hour: `surplus = production − consumption`. If positive, charge `min(surplus, capacity − soc)` and export the rest. If negative, discharge `min(deficit, soc)` and import the rest. Round-trip efficiency 90 % applied on discharge (energy out = stored × 0.9), start empty, no charge or discharge power limit, no degradation.
-- Stated limitations: flat profile, 2023 weather only, PVGIS timestamps are UTC, no battery power limit.
+- Consumption model (decision 54, replaces the flat profile of 14): PVGIS's published default household profile, 24 shares of a day's use that sum to 1, heavy in the evening. Daily use is `annualUseKwh / 365`, the same shape every day. PVGIS hours are UTC and the profile is Dutch standard time, so the profile hour is the UTC hour + 1, as the PVGIS documentation instructs. Rationale for the README: PVGIS gives no load data for an address; the brief allows a simple stated assumption; a published profile from the same source beats an invented shape, and its evening peak is when a battery earns its keep. State what it ignores: seasons, weekends, summer time, differences between households.
+- Battery simulation per hour: if production covers use, the house uses its share directly, the surplus charges the battery up to its free space, and the rest is exported. Otherwise the house uses all production, the battery delivers `min(shortfall, charge × 0.9)` and its charge drops by delivered ÷ 0.9, and the rest is imported. 90 % round trip, a general assumption from typical published values for home batteries, the whole loss on the way out; starts empty; no reserve; no power limit (measured: 1 kWh a year at 2.5 kW); no degradation.
+- Stated limitations: one generic profile for every household and day, 2023 weather only, no summer time shift, no battery power limit or reserve, no ageing. `productionKwh` is the 2023 hourly sum (5338 for The Hague) so the battery figures add up; the production card's 5341 is PVcalc's 2005 to 2023 average.
 
 ### 3.6 Frontend architecture
 
@@ -531,6 +531,6 @@ Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, 
 - [x] Phase 2 merged
 - [x] Phase 3 merged
 - [x] Phase 4 merged
-- [ ] Phase 5 merged
+- [x] Phase 5 merged
 - [ ] Phase 6 merged
 - [ ] `v1.0.0` tagged and submitted

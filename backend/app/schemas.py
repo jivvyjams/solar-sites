@@ -39,3 +39,18 @@ class MonthKwh(CamelModel):
 class ProductionOut(CamelModel):
     yearly_kwh: float
     monthly_kwh: list[MonthKwh]
+
+
+class EnergyTotals(CamelModel):
+    self_used_kwh: float
+    grid_import_kwh: float
+    grid_export_kwh: float
+
+
+class BatteryOut(CamelModel):
+    production_kwh: float
+    consumption_kwh: float
+    capacity_kwh: float
+    without_battery: EnergyTotals
+    with_battery: EnergyTotals
+    battery_gain_kwh: float
