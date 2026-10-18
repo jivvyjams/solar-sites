@@ -44,7 +44,8 @@
 | 3     | Sat 17 Oct, morning      | Five site routes with ownership and validation; list/form/detail pages                  | `feat/sites`         |
 | 4     | Sat 17 Oct, afternoon    | PVGIS PVcalc → production endpoint + monthly chart                                      | `feat/production`    |
 | 5     | Sun 18 Oct, morning      | seriescalc + energy simulation → battery endpoint + calculator UI                       | `feat/battery`       |
-| 6     | Sun 18 Oct, afternoon    | Tests complete, security pass, README, clean-clone Docker test                          | `chore/hardening`    |
+| 5b    | Sun 18 Oct, 14:30 to 20:30 | SiteDetail split into sections; PDOK address lookup; map beside the sites list; bounded polish (decision 58) | `refactor/site-detail`, `feat/detail-ui`, `feat/address-lookup`, `feat/map`, `feat/polish` |
+| 6     | Sun 18 Oct, evening; Mon morning | Tests complete, security pass, README, clean-clone Docker test                   | `chore/hardening`    |
 | 7     | Mon 19 Oct, before 12:00 | Rehearsal `quiz` on every phase, final review, tag `v1.0.0`, submit the link            | `main`               |
 
 Day targets (set 16 Oct): phase 2 merged Friday night (backend by 13:00, frontend by 18:00, tests and review in
@@ -117,6 +118,17 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | `tests/test_energy.py` (4-hour hand-computed series, balance on a real PVGIS day) | T |
 | `schemas.py` battery models | T |
 | battery form, gain tile, comparison table in `SiteDetail.tsx` | D |
+
+**Phase 5b, stretch**
+
+| File | Tier |
+| --- | --- |
+| `lib/format.ts`, `SiteFacts.tsx`, `ProductionSection.tsx`, `BatterySection.tsx`, `BatteryResult.tsx` (moved out of `SiteDetail.tsx`) | T |
+| `PageHeader` subtitle and back link; `SiteFacts` as one row; battery share bars | T |
+| `pdok.py`, `routers/address.py`, `schemas.py` `AddressOut`, `tests/test_address.py` | T |
+| `api/address.ts`, `components/AddressLookup.tsx`, `SiteForm.tsx` wiring | T |
+| `components/SitesMap.tsx`, `Sites.tsx` grid | T |
+| Polish list (decision 62) | T |
 
 **Phase 6, hardening**
 
@@ -322,7 +334,34 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 **Learn first:** time-series simulation and state of charge; floating point rounding; keeping pure functions apart from I/O; FastAPI `Query` validation; nested Pydantic response models.
 **Interview angles:** why PVGIS's household profile and what it ignores (seasons, weekends, summer time, differences between households, battery power limits, degradation); why the profile hour is the UTC hour + 1; where the efficiency loss is applied and why; why capacity 0 needs no special case.
 
-### Phase 6: Hardening, tests, README (Sun 18 Oct, afternoon)
+### Phase 5b: Stretch (Sun 18 Oct, 14:30 to 20:30)
+
+**Goal.** The two stretch items from §5 plus a page refactor and a bounded polish list, in a fixed timebox before phase 6 (decision 58). Order: refactor, detail-page UI, address lookup, map, polish. Cut order if the clock runs out: polish (rolls into phase 6's hour), then the map (reserve: one "Open in OpenStreetMap" link per site); the lookup is finished once started. Five PRs, one per seam.
+
+**1. Refactor (`refactor/site-detail`, decision 59).** `SiteDetail.tsx` keeps the site fetch, delete and header and renders three sections. Moves: `kwh()` and `formatNumber()` to `lib/format.ts`; the facts `<dl>` to `components/SiteFacts.tsx` (`{ site }`); the production state, fetch and card to `components/ProductionSection.tsx` (`{ siteId }`); the battery form and state to `components/BatterySection.tsx` (`{ siteId }`); the gain tile and table to `components/BatteryResult.tsx` (`{ battery }`). Pure moves, no behaviour change; the page must look identical.
+
+**2. Detail-page UI (`feat/detail-ui`, decision 62).** `PageHeader` gains `subtitle` and `backLink`; the site page shows the address under the title and a "Sites" link above it; `SiteFacts` becomes one row of four; `BatteryResult` gets an 8 px share bar under each value (share of `productionKwh`, `bg-solar` for self-used, `bg-border` for grid) and the sentence "from X to Y kWh, Z % more".
+
+**3. Address lookup (`feat/address-lookup`, decision 60).** Backend: `pdok.py` (`fetch_json(params)`, `to_address(doc)`, `lookup_address(postcode, house_number)`), `AddressOut` schema, `routers/address.py` with `GET /api/address-lookup?postcode=&houseNumber=` behind `current_user`, registered in `main.py`. Frontend: `AddressLookup` type, `api/address.ts` `lookupAddress(postcode, houseNumber)`, `components/AddressLookup.tsx` (`{ onFound }`) rendered as a sibling form above the site form in `SiteForm.tsx`; the three filled fields stay editable.
+
+**4. Map (`feat/map`, decision 61).** `npm install leaflet react-leaflet` and `npm install -D @types/leaflet` (user). `components/SitesMap.tsx` (`{ sites }`) with `MapContainer`, `TileLayer`, one `CircleMarker` and `Popup` per site; `Sites.tsx` renders the list and the map in a two-column grid when there is at least one site.
+
+**5. Polish (`feat/polish`, decision 62).** The bounded list in decision 62, in order, until 20:30.
+
+**Tests:** `tests/test_address.py`: the PDOK document maps to `{address, latitude, longitude}` with longitude and latitude in the right order (monkeypatch `pdok.fetch_json`); `numFound` 0 gives 422 with our message; a malformed postcode gives 422 with `loc` ending in `postcode`. No frontend tests (decision 18).
+
+**Acceptance**
+
+- [ ] Site page renders identically after the split; `npm run build` and `npm run lint` clean.
+- [ ] Header, facts row and share bars match the mockup's intent with tokens only.
+- [ ] Lookup `2513AA` / `1` fills "Binnenhof 1, 2513AA 's-Gravenhage", 52.079, 4.312; `2517AS` / `120` shows the no-address message; `12345` shows a message under the postcode field.
+- [ ] Map shows one pin per site, the popup link opens the site, one site does not zoom to street level, the map stacks under the list on a narrow window.
+- [ ] `pytest -q` 25 passed; `docker build` succeeds with the new packages.
+
+**Learn first:** `Query(pattern=...)`; Solr field queries (`field:value AND field:value`); WKT `POINT(lon lat)`; Leaflet containers need an explicit height; React portals (a `Link` inside a Leaflet popup); SVG presentation attributes versus CSS classes.
+**Interview angles:** why the lookup goes through the backend (validation first, our own messages, one pattern for every third party); why 422 for "no address found"; why the field-scoped PDOK query; why `CircleMarker` and what that costs in keyboard access; what the tile host learns from the browser; why section components own their request state.
+
+### Phase 6: Hardening, tests, README (Sun 18 Oct, evening; Mon morning)
 
 1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Known gap (found 18 Oct): `roofAreaM2` has only `gt=0`, so `1e400` is stored as infinity and returned as `null`; add an `le=` like the other numeric fields.
 2. Tests: close the gaps against §0. `pytest -q` green. `ruff check .` and `ruff format --check .` clean. `npm run lint` and `npm run build` clean.
@@ -368,6 +407,7 @@ Ids (decision 12): generated in Python with `uuid4()` and stored in SQLite as `T
 | `DELETE /api/sites/{id}`         | 204                               | 401; 403 CSRF; 404                                                                               |
 | `GET /api/sites/{id}/production` | 200 `{yearlyKwh, monthlyKwh}`     | 401; 404; 422 PVGIS has no data for the location; 502 any other PVGIS failure, timeouts included |
 | `GET /api/sites/{id}/battery`    | 200 (§3.5)                        | 401; 404; 422 bad query or no data; 502                                                          |
+| `GET /api/address-lookup`        | 200 `{address, latitude, longitude}` | 401; 422 malformed postcode or house number, or no address found; 502 PDOK unavailable or any non-200 |
 
 Why 404 and not 403 for another user's site: the response must not reveal that the id exists. Why 422 for a path id that is not a well-formed UUID: it is a malformed request, not a missing resource, and FastAPI produces it automatically. Why 422 for validation: FastAPI's default and semantically "well-formed but unprocessable". Why 403 for CSRF: the session is valid but the request is not authorised in this form.
 
@@ -413,10 +453,12 @@ src/
   App.tsx                   route table; RequireAuth layout
   api/client.ts             request<T>(): JSON headers, X-CSRF-Token, ApiError with fieldErrors
   api/types.ts              Site, SiteInput, Production, BatteryResult, ApiError (mirror the contract)
-  api/auth.ts  api/sites.ts one function per route; the only files that call request()
+  api/auth.ts  api/sites.ts  api/address.ts  one function per route; the only files that call request()
   auth/AuthContext.tsx      status, email, csrfToken, login/register/logout; /api/me on mount
-  pages/  Login, Register, Sites, SiteForm (new + edit), SiteDetail (fields, production, battery)
-  components/               Button, Field, PageHeader, ErrorBanner, Spinner, MonthlyChart, NavBar
+  pages/  Login, Register, Sites (list + SitesMap), SiteForm (AddressLookup + fields), SiteDetail (header + three sections)
+  components/               base: Button, Field, PageHeader, ErrorBanner, EmptyState, Spinner, NavBar
+                            sections (own their request state, call src/api/*): SiteFacts, ProductionSection,
+                            BatterySection, BatteryResult, MonthlyChart, AddressLookup, SitesMap (decision 59)
   index.css                 @import "tailwindcss"; plus the @theme token block (§3.8)
   lib/format.ts             number formatting (Intl.NumberFormat)
 ```
@@ -508,9 +550,9 @@ Cut list (cut from the bottom first; everything above the line stays):
 
 Never cut: Docker path, auth with hashing, CSRF and session expiry, ownership isolation, per-field validation, production, battery, the minimal tests, README.
 
-Stretch 1 (decision 53; only when phase 6 is merged and green, before the map, branch `feat/address-lookup`): a postcode lookup on the site form. A small separate `<form>` above the site form (a sibling, never nested) with postcode and house number inputs and a "Look up" button. It calls a new backend route, `GET /api/address-lookup?postcode=&houseNumber=` (requires a session; postcode validated with `Query`), which calls PDOK Locatieserver with `httpx.get` and a timeout, in the same pattern as `pvgis.py`, and returns `{address, latitude, longitude}`; not found is a 404 or 422, any other failure a 502, with our own messages. The frontend fills the existing `address`, `latitude` and `longitude` fields, which stay editable; the site contract is unchanged. No suggestions as you type. To verify first: PDOK response fields (coordinates likely `POINT(lon lat)`, longitude first). About two hours. README "next steps" mentions it whether or not it is built.
+Stretch 1 (decision 53; built in phase 5b on 18 Oct, decision 58; branch `feat/address-lookup`): a postcode lookup on the site form. A small separate `<form>` above the site form (a sibling, never nested) with postcode and house number inputs and a "Look up" button. It calls a new backend route, `GET /api/address-lookup?postcode=&houseNumber=` (requires a session; postcode validated with `Query`), which calls PDOK Locatieserver with `httpx.get` and a timeout, in the same pattern as `pvgis.py`, and returns `{address, latitude, longitude}`; no address found is a 422, any other failure a 502, with our own messages. The frontend fills the existing `address`, `latitude` and `longitude` fields, which stay editable; the site contract is unchanged. No suggestions as you type. Verified 18 Oct: the field-scoped query `postcode:X AND huisnummer:N` is exact (a missing house gives `numFound` 0), the free-text form is fuzzy; `centroide_ll` is `POINT(lon lat)`, longitude first (decision 60). About two hours. README "next steps" mentions it whether or not it is built.
 
-Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, Sunday evening at the earliest, branch `feat/map`): a map pane on the sites page with Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with the "© OpenStreetMap contributors" line, one `CircleMarker` per site (not `Marker`: its icon images break under Vite) with a popup linking to the site, bounds fitted to the sites, and an explicit container height. The "Sites with map" artboard on the canvas is the target. About three to four hours including the README paragraph. If it is dropped, the reserve is one "Open in OpenStreetMap" link per site built from the coordinates, zero packages.
+Stretch 2 (decision 39; built in phase 5b after stretch 1, decision 58; branch `feat/map`; details in decision 61): a map pane on the sites page with Leaflet + react-leaflet v5, OpenStreetMap tiles fetched by the browser with the "© OpenStreetMap contributors" line, one `CircleMarker` per site (not `Marker`: its icon images break under Vite) with a popup linking to the site, bounds fitted to the sites, and an explicit container height. The "Sites with map" artboard on the canvas is the target. About three to four hours including the README paragraph. If it is dropped, the reserve is one "Open in OpenStreetMap" link per site built from the coordinates, zero packages.
 
 ## 6. End-to-end manual test script (run on the Docker image)
 
@@ -522,6 +564,8 @@ Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, 
 6. With DevTools, replay a POST without the `X-CSRF-Token` header: 403. Replay with a wrong token: 403.
 7. Logout A. Refresh: login page. `curl /api/me` with the old cookie: 401.
 8. Stop the container (`docker stop`), start it again: the database is empty (expected; documented).
+9. Site form: look up `2513AA` / `1`; address, latitude and longitude fill in and the site saves. `2517AS` / `120` shows the no-address message.
+10. Sites page: the map shows one pin per site; a pin's popup opens the site. With one site the map is not zoomed to street level.
 
 ## 7. Progress
 
@@ -532,5 +576,6 @@ Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, 
 - [x] Phase 3 merged
 - [x] Phase 4 merged
 - [x] Phase 5 merged
+- [ ] Phase 5b merged
 - [ ] Phase 6 merged
 - [ ] `v1.0.0` tagged and submitted
