@@ -69,8 +69,8 @@ export default function BatteryResult({
             <th scope="col" className="pb-3 font-semibold text-center">
               Without <br className="sm:hidden" /> battery
             </th>
-            <th scope="col" className="pb-3 font-semibold">
-              <span className="inline-block rounded-control bg-accent-soft px-2 py-0.5 text-center text-accent-hover">
+            <th scope="col" className="pb-3 font-semibold text-center">
+              <span className="inline-block rounded-control bg-accent-soft px-2 py-0.5 text-accent-hover">
                 With {battery.capacityKwh} kWh battery
               </span>
             </th>
