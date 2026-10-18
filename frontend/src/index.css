@@ -19,6 +19,7 @@
   --color-solar: #4e8a35;
   --color-solar-soft: #cfe4b6;
   --color-danger: #b42318;
+  --color-danger-bright: #d34d43;
   --color-danger-soft: #fbeae8;
 
   --radius-control: 6px;
@@ -39,4 +40,85 @@
     color: var(--color-text);
     background-color: var(--color-canvas);
   }
+}
+
+/* Sites map: muted tiles, red pins that carry the contrast, controls and popup in the site's tokens */
+.sites-map.leaflet-container {
+  background-color: var(--color-canvas);
+  font-family: var(--font-sans);
+}
+
+.sites-map .leaflet-tile-pane {
+  filter: grayscale(1) sepia(0.75) saturate(0.6) hue-rotate(165deg)
+    contrast(0.8) brightness(1.05);
+}
+
+.sites-map .site-pin {
+  transition:
+    transform 150ms ease-out,
+    background-color 150ms ease-out;
+}
+
+.sites-map .site-pin:hover,
+.sites-map .site-pin:focus-visible {
+  background-color: var(--color-danger);
+  transform: scale(1.2);
+}
+
+.sites-map .site-pin:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.sites-map .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 28px rgb(41 129 182 / 0.16);
+  color: var(--color-text);
+}
+
+.sites-map .leaflet-popup-content {
+  margin: 16px;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.sites-map .leaflet-popup-tip {
+  box-shadow: var(--shadow-card);
+}
+
+.sites-map .leaflet-popup-content a {
+  color: var(--color-accent);
+}
+
+.sites-map .leaflet-bar {
+  border: 0;
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card);
+}
+
+.sites-map .leaflet-bar a {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.sites-map .leaflet-bar a:hover {
+  background-color: var(--color-canvas);
+}
+
+.sites-map .leaflet-bar a:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.sites-map .leaflet-control-attribution {
+  background-color: rgb(255 255 255 / 0.9);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.sites-map .leaflet-control-attribution a {
+  color: var(--color-accent);
 }
