@@ -7,6 +7,7 @@ import { buttonClasses } from "../components/buttonClasses";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
 import PageHeader from "../components/PageHeader";
+import SitesMap from "../components/SitesMap";
 import Spinner from "../components/Spinner";
 
 type PageState =
@@ -50,31 +51,34 @@ export default function Sites(): ReactElement {
     );
   } else {
     content = (
-      <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card">
-        {state.sites.map((site) => (
-          <li key={site.id}>
-            <Link
-              to={`/sites/${site.id}`}
-              className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-semibold">{site.clientName}</p>
-                <p className="truncate text-sm text-text-muted">
-                  {site.address}
-                </p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="font-semibold">{site.peakKwp} kWp</p>
-                <p className="text-sm text-text-muted">
-                  {site.roofAreaM2 === null
-                    ? "Roof area not set"
-                    : `${site.roofAreaM2} m²`}
-                </p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card">
+          {state.sites.map((site) => (
+            <li key={site.id}>
+              <Link
+                to={`/sites/${site.id}`}
+                className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{site.clientName}</p>
+                  <p className="truncate text-sm text-text-muted">
+                    {site.address}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="font-semibold">{site.peakKwp} kWp</p>
+                  <p className="text-sm text-text-muted">
+                    {site.roofAreaM2 === null
+                      ? "Roof area not set"
+                      : `${site.roofAreaM2} m²`}
+                  </p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <SitesMap sites={state.sites} />
+      </div>
     );
   }
 
