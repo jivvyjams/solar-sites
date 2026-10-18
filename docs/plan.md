@@ -344,7 +344,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 **3. Address lookup (`feat/address-lookup`, decision 60).** Backend: `pdok.py` (`fetch_json(params)`, `to_address(doc)`, `lookup_address(postcode, house_number)`), `AddressOut` schema, `routers/address.py` with `GET /api/address-lookup?postcode=&houseNumber=` behind `current_user`, registered in `main.py`. Frontend: `AddressLookup` type, `api/address.ts` `lookupAddress(postcode, houseNumber)`, `components/AddressLookup.tsx` (`{ onFound }`) rendered as a sibling form above the site form in `SiteForm.tsx`; the three filled fields stay editable.
 
-**4. Map (`feat/map`, decision 61).** `npm install leaflet react-leaflet` and `npm install -D @types/leaflet` (user). `components/SitesMap.tsx` (`{ sites }`) with `MapContainer`, `TileLayer`, one `CircleMarker` and `Popup` per site; `Sites.tsx` renders the list and the map in a two-column grid when there is at least one site.
+**4. Map (`feat/map`, decision 61).** `npm install leaflet react-leaflet` and `npm install -D @types/leaflet` (user). `components/SitesMap.tsx` (`{ sites }`) with `MapContainer`, `TileLayer`, one `CircleMarker` and `Popup` per site, OpenStreetMap tiles toned to the palette by a CSS filter in `index.css` (decision 61); `Sites.tsx` renders the list and the map in a two-column grid when there is at least one site.
 
 **5. Polish (`feat/polish`, decision 62).** The bounded list in decision 62, in order, until 20:30.
 
