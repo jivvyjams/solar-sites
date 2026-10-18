@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.db import init_db
@@ -12,6 +13,13 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(sites.router)
 app.include_router(address.router)
+
+
+@app.exception_handler(RequestValidationError)
+def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    errors = [{"loc": error["loc"], "msg": error["msg"]} for error in exc.errors()]
+    return JSONResponse(status_code=422, content={"detail": errors})
+
 
 init_db()
 

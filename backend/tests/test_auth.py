@@ -61,3 +61,11 @@ def test_logout_deletes_the_session(client: TestClient) -> None:
     assert response.status_code == 204
     client.cookies.set("session", old_cookie)
     assert client.get("/api/me").status_code == 401
+
+
+def test_validation_body_does_not_echo_the_input(client: TestClient) -> None:
+    response = client.post(
+        "/api/register", json={"email": EMAIL, "password": "secret123"}
+    )
+    assert response.status_code == 422
+    assert "input" not in response.json()["detail"][0]
