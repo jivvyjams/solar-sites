@@ -303,7 +303,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 1. `pvgis.py`: `fetch_seriescalc(lat, lon, kwp)`, same shape as `fetch_pvcalc`, calls seriescalc with `pvcalculation=1`, `loss=14`, `optimalangles=1`, `startyear=2023`, `endyear=2023`, `outputformat=json` and returns 8760 kWh values in order (`P` in W ÷ 1000). Same `@lru_cache`; this call takes 5 to 10 s, so the cache matters here.
 2. `energy.py` (pure, no I/O, no FastAPI imports), per decision 54: `hourly_use(annual_use_kwh, hours) -> list[float]` spreads annual use over the hours with PVGIS's default 24-hour profile (profile hour = UTC hour + 1); `simulate(production, use, capacity_kwh) -> dict` walks the year hour by hour and returns the three totals. Run it twice (capacity 0 and capacity N).
-3. Query validation: `capacityKwh` ≥ 0 and `annualUseKwh` > 0, both required, declared as typed query parameters with `Query(ge=..., gt=...)` and camelCase aliases.
+3. Query validation: `capacityKwh` 0 to 1000 and `annualUseKwh` above 0 up to 1,000,000, both required, declared as typed query parameters with `Query(ge=..., gt=..., le=...)` and camelCase aliases. The upper bounds also reject `inf` and `1e400`, which pass a lower bound alone and come back as `null` (decision 56).
 4. `routers/sites.py`: owned site → cached hourly data → simulate → response model.
 
 **Frontend**
@@ -324,7 +324,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 ### Phase 6: Hardening, tests, README (Sun 18 Oct, afternoon)
 
-1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why.
+1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Known gap (found 18 Oct): `roofAreaM2` has only `gt=0`, so `1e400` is stored as infinity and returned as `null`; add an `le=` like the other numeric fields.
 2. Tests: close the gaps against §0. `pytest -q` green. `ruff check .` and `ruff format --check .` clean. `npm run lint` and `npm run build` clean.
 3. Session expiry enforced, expired rows deleted on login (if not done in phase 2).
 4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement. Last section: References, with the sources behind the model's assumptions (decision 55).
