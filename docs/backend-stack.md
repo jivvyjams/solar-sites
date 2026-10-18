@@ -146,7 +146,7 @@ tests: pytest + FastAPI TestClient (built on httpx)      lint/format: ruff
   one client library instead of two. It has explicit timeouts and a clean `response.json()`.
 - **Why not the stdlib `urllib`:** it works, but error handling and JSON decoding take more lines than the
   one call below, and httpx is already present.
-- **Used here:** `app/pvgis.py` exposes `fetch_pvcalc(lat, lon, kwp)` and `fetch_hourly(lat, lon, kwp)`,
+- **Used here:** `app/pvgis.py` exposes `fetch_pvcalc(lat, lon, kwp)` and `fetch_seriescalc(lat, lon, kwp)`,
   each one `httpx.get(url, params=..., timeout=30)`, each raising `HTTPException` directly: 422 when
   PVGIS reports no data for the location, 502 for anything else (decision 35). Both are decorated with
   `@functools.lru_cache` (decision 13).
