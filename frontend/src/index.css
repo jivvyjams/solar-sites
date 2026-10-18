@@ -81,7 +81,7 @@
 
 .sites-map .leaflet-popup-content-wrapper {
   border-radius: var(--radius-card);
-  box-shadow: 0 8px 28px rgb(41 129 182 / 0.16);
+  box-shadow: var(--shadow-card);
   color: var(--color-text);
 }
 

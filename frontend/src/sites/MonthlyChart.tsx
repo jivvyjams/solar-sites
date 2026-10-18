@@ -71,7 +71,7 @@ export default function MonthlyChart({
               <li
                 key={m.month}
                 tabIndex={0}
-                className="group relative flex flex-1 flex-col items-center gap-2 rounded-control pt-8 focus-visible:outline-2 focus-visible:outline-brand"
+                className="group relative flex flex-1 flex-col items-center gap-2 rounded-control pt-8 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
               >
                 <span
                   aria-hidden="true"
