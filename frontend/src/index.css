@@ -26,8 +26,7 @@
   --radius-card: 12px;
   --shadow-card: 0 2px 14px rgb(41 129 182 / 0.08);
 
-  /* Sites pane at lg: the viewport minus the sticky nav bar (h-16) and the page padding (py-10 twice) */
-  --spacing-pane: calc(100dvh - 9rem);
+  --spacing-pane: calc(100dvh - 12rem);
 
   --animate-grow: grow 700ms ease-out;
   --animate-grow-x: grow-x 700ms ease-out;

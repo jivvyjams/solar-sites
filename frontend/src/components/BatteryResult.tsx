@@ -99,10 +99,6 @@ export default function BatteryResult({
           ))}
         </tbody>
       </table>
-      <p className="text-sm text-text-muted">
-        Bars are shares of the {kwh(productionKwh)} produced in 2023. Household
-        use: {kwh(battery.consumptionKwh)} per year.
-      </p>
     </>
   );
 }

@@ -1,10 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import type { ReactElement } from "react";
-import {
-  divIcon,
-  type LatLngBoundsExpression,
-  type LatLngTuple,
-} from "leaflet";
+import { divIcon, type LatLngTuple } from "leaflet";
 import {
   MapContainer,
   Marker,
@@ -18,12 +14,6 @@ import type { Site } from "../api/types";
 const TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-
-// The Netherlands with a margin: the map never pans or zooms out of it.
-const NETHERLANDS: LatLngBoundsExpression = [
-  [50.5, 2.8],
-  [53.8, 7.6],
-];
 
 const PIN = divIcon({
   className:
@@ -42,9 +32,6 @@ export default function SitesMap({ sites }: { sites: Site[] }): ReactElement {
     <MapContainer
       bounds={points}
       boundsOptions={{ padding: [48, 48], maxZoom: 13 }}
-      maxBounds={NETHERLANDS}
-      maxBoundsViscosity={1}
-      minZoom={7}
       maxZoom={16}
       zoomControl={false}
       scrollWheelZoom={false}
