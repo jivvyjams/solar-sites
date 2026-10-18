@@ -114,7 +114,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 | `pvgis.py` `fetch_seriescalc` | T |
 | `energy.py` `simulate` | T |
 | battery route with `Query` aliases | T |
-| `tests/test_energy.py` (24-hour hand-computed series, balance) | T |
+| `tests/test_energy.py` (4-hour hand-computed series, balance on a real PVGIS day) | T |
 | `schemas.py` battery models | T |
 | battery form, gain tile, comparison table in `SiteDetail.tsx` | D |
 
@@ -311,16 +311,16 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 1. `src/api/sites.ts`: `getBattery(id, capacityKwh, annualUseKwh)`.
 2. Site page section: a small form (capacity kWh, annual use kWh, sensible defaults such as 5 and 3500), results side by side for without and with battery (self-used, imported, exported), and a headline "The battery adds X kWh of self-used solar per year".
 
-**Tests:** a hand-made 24-hour series with round numbers whose answers you can compute on paper; capacity 0 equals the without-battery result; energy balance holds (production = self-used + export; consumption = self-used + import).
+**Tests:** a hand-made 4-hour series with round numbers whose answers you can compute on paper (capacity 0, and capacity 1 to show the cap and the 10 % loss); energy balance on the 24-hour fixture day (consumption = self-used + import; self-used + export < production, the gap being battery loss and charge left at the end); the route returns the camelCase comparison and a 422 for a negative capacity.
 
 **Acceptance**
 
-- [ ] Results move sensibly with capacity (0 equals without; very large plateaus).
-- [ ] Balance assertions pass.
-- [ ] README section on the model written.
+- [x] Results move sensibly with capacity (0 equals without; very large plateaus). The Hague, 5 kWp, 3500 kWh: self-used 1011 at 0 kWh, 2312 at 5, 2774 at 10, 2879 at 20, 3344 at 1000.
+- [x] Balance assertions pass.
+- [ ] README section on the model written: moved to phase 6 item 4, where the README is written from scratch (decision 55).
 
 **Learn first:** time-series simulation and state of charge; floating point rounding; keeping pure functions apart from I/O; FastAPI `Query` validation; nested Pydantic response models.
-**Interview angles:** why a flat profile and what it ignores (daily shape, seasons, time zone, battery power limits, degradation); where the efficiency loss is applied and why.
+**Interview angles:** why PVGIS's household profile and what it ignores (seasons, weekends, summer time, differences between households, battery power limits, degradation); why the profile hour is the UTC hour + 1; where the efficiency loss is applied and why; why capacity 0 needs no special case.
 
 ### Phase 6: Hardening, tests, README (Sun 18 Oct, afternoon)
 
@@ -387,16 +387,16 @@ Why 404 and not 403 for another user's site: the response must not reveal that t
 
 ### 3.5 Battery response and consumption model
 
-Response (contract fields first, the "…" filled in by us):
+Response (contract fields first, the "…" filled in by us; numbers for The Hague, 5 kWp, 3500 kWh, 5 kWh battery):
 
 ```
 {
-  "productionKwh": 5341.0,
+  "productionKwh": 5337.6,
   "consumptionKwh": 3500.0,
   "capacityKwh": 5.0,
   "withoutBattery": { "selfUsedKwh", "gridImportKwh", "gridExportKwh" },
   "withBattery":    { "selfUsedKwh", "gridImportKwh", "gridExportKwh" },
-  "batteryGainKwh": 812.4
+  "batteryGainKwh": 1300.2
 }
 ```
 
@@ -531,6 +531,6 @@ Stretch 2 (decision 39; only after stretch 1, when phase 6 is merged and green, 
 - [x] Phase 2 merged
 - [x] Phase 3 merged
 - [x] Phase 4 merged
-- [ ] Phase 5 merged
+- [x] Phase 5 merged
 - [ ] Phase 6 merged
 - [ ] `v1.0.0` tagged and submitted
