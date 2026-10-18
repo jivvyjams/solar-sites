@@ -54,7 +54,7 @@ export default function BatterySection({
         </h2>
         <p className="text-sm text-text-muted">
           PVGIS household profile, hourly simulation, 90 % round-trip
-          efficiency, 2023 weather
+          efficiency, 2023 weather data
         </p>
       </div>
       <form
@@ -71,7 +71,7 @@ export default function BatterySection({
           error={fieldErrors.capacityKwh}
         />
         <Field
-          label="Annual electricity use (kWh)"
+          label="Annual consumption (kWh)"
           id="annualUseKwh"
           className="w-full md:w-50"
           value={annualUseKwh}
