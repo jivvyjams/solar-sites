@@ -3,9 +3,9 @@ import type { Battery, EnergyTotals } from "../api/types";
 import { kwh } from "../lib/format";
 
 const ROWS: { label: string; key: keyof EnergyTotals; bar: string }[] = [
-  { label: "Self-used solar", key: "selfUsedKwh", bar: "bg-solar" },
-  { label: "Imported from grid", key: "gridImportKwh", bar: "bg-border" },
-  { label: "Exported to grid", key: "gridExportKwh", bar: "bg-border" },
+  { label: "Self-consumed solar", key: "selfUsedKwh", bar: "bg-solar" },
+  { label: "Imported from the grid", key: "gridImportKwh", bar: "bg-border" },
+  { label: "Exported to the grid", key: "gridExportKwh", bar: "bg-border" },
 ];
 
 function ValueCell({
@@ -53,11 +53,11 @@ export default function BatteryResult({
             +{kwh(battery.batteryGainKwh)}
           </span>
           <span className="block sm:ml-2 sm:inline">
-            of self-used solar per year
+            of self-consumed solar per year
           </span>
         </p>
         <p className="text-sm">
-          A {battery.capacityKwh} kWh battery lifts self-used solar from{" "}
+          A {battery.capacityKwh} kWh battery lifts self-consumed solar from{" "}
           {kwh(before)} to {kwh(withBattery.selfUsedKwh)}
           {percent !== null && `, ${percent} % more`}.
         </p>
@@ -70,7 +70,7 @@ export default function BatteryResult({
               Without <br className="sm:hidden" /> battery
             </th>
             <th scope="col" className="pb-3 font-semibold text-center">
-              <span className="inline-block rounded-control bg-accent-soft px-2 py-0.5 text-accent-hover">
+              <span className="inline-block rounded-control bg-accent-soft px-2 py-0.5 text-accent">
                 With {battery.capacityKwh} kWh battery
               </span>
             </th>

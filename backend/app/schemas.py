@@ -37,7 +37,7 @@ class SiteIn(CamelModel):
     address: str = Field(min_length=1, max_length=500)
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
-    roof_area_m2: float | None = Field(default=None, gt=0)
+    roof_area_m2: float | None = Field(default=None, gt=0, le=1_000_000)
     peak_kwp: float = Field(gt=0, le=1000)
 
 

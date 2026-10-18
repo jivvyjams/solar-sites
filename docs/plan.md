@@ -363,7 +363,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 ### Phase 6: Hardening, tests, README (Sun 18 Oct, evening; Mon morning)
 
-1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Known gap (found 18 Oct): `roofAreaM2` has only `gt=0`, so `1e400` is stored as infinity and returned as `null`; add an `le=` like the other numeric fields.
+1. Security pass against the checklist in CLAUDE.md. Run `/code-review` and `/security-review`. Fix what you understand; note what you skip and why. Done 18 Oct (decision 65): `roofAreaM2` capped with `le=1_000_000`; the open question in CLAUDE.md §10 (422 bodies echo the input, `NaN` body gives 500) still needs a decision.
 2. Tests: close the gaps against §0. `pytest -q` green. `ruff check .` and `ruff format --check .` clean. `npm run lint` and `npm run build` clean.
 3. Session expiry enforced, expired rows deleted on login (if not done in phase 2).
 4. README written from scratch: run with Docker; run in dev (two terminals); stack and why (condense [backend-stack.md](backend-stack.md)); API notes (status codes, error shape); auth and CSRF design; consumption model and rationale; PVGIS handling and cache; known limits; AI-usage statement. Last section: References, with the sources behind the model's assumptions (decision 55).
@@ -581,6 +581,6 @@ Stretch 2 (decision 39; built in phase 5b after stretch 1, decision 58; branch `
 - [x] Phase 3 merged
 - [x] Phase 4 merged
 - [x] Phase 5 merged
-- [ ] Phase 5b merged
+- [x] Phase 5b merged
 - [ ] Phase 6 merged
 - [ ] `v1.0.0` tagged and submitted
