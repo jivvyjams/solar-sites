@@ -8,7 +8,7 @@ export default function NavBar(): ReactElement {
   const { email, logout } = useAuth();
 
   return (
-    <header className="border-b border-border bg-surface shadow-card">
+    <header className="sticky top-0 z-10 border-b border-border bg-surface shadow-card">
       <nav className="mx-auto max-w-6xl px-7 h-16 flex items-center justify-between">
         <Link
           to="/"
