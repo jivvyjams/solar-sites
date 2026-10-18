@@ -1,6 +1,8 @@
 import { useState, type SubmitEvent, type ReactElement } from "react";
 import { Link, Navigate } from "react-router";
+import { SolarPanelIcon } from "@phosphor-icons/react";
 import { ApiError } from "../api/client";
+import background from "../assets/background.jpg";
 import { useAuth } from "../auth/useAuth";
 import Button from "../components/Button";
 import ErrorBanner from "../components/ErrorBanner";
@@ -35,49 +37,73 @@ export default function Login(): ReactElement {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-7 py-10 min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-sm flex flex-col gap-6 bg-surface rounded-card shadow-card p-8">
-        <h1 className="font-display text-3xl">Log in</h1>
-
-        {error && <ErrorBanner message={error.message} />}
-
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="flex flex-col gap-4"
-        >
-          <Field
-            label="Email"
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={error?.fieldErrors.email}
+    <main className="min-h-screen lg:flex">
+      <section className="flex min-h-screen flex-col bg-surface px-7 py-10 sm:px-16 lg:w-lg lg:shrink-0">
+        <div className="flex items-center gap-2 font-display text-xl">
+          <SolarPanelIcon
+            size={32}
+            weight="duotone"
+            className="text-brand"
+            aria-hidden="true"
           />
-          <Field
-            label="Password"
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={error?.fieldErrors.password}
-          />
-          <Button type="submit" loading={isSubmitting}>
-            Log in
-          </Button>
-        </form>
+          Solar Sites
+        </div>
 
-        <p className="text-sm text-text-muted">
-          No account yet?{" "}
-          <Link
-            to="/register"
-            className="font-semibold text-accent hover:text-accent-hover rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        <div className="flex w-full max-w-xs flex-1 flex-col justify-center gap-6 py-10">
+          <h1 className="font-display text-3xl">Welcome back!</h1>
+
+          {error && <ErrorBanner message={error.message} />}
+
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex flex-col gap-4"
           >
-            Create one
-          </Link>
-        </p>
+            <Field
+              label="Email"
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={error?.fieldErrors.email}
+            />
+            <Field
+              label="Password"
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={error?.fieldErrors.password}
+            />
+            <Button
+              type="submit"
+              loading={isSubmitting}
+              className="self-start"
+            >
+              Log in
+            </Button>
+          </form>
+
+          <p className="text-sm text-text-muted">
+            No account yet?{" "}
+            <Link
+              to="/register"
+              className="font-semibold text-accent hover:text-accent-hover rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              Create one
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      <div className="relative hidden lg:block lg:flex-1">
+        <img
+          src={background}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       </div>
     </main>
   );

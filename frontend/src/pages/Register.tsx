@@ -1,8 +1,11 @@
 import { useState, type SubmitEvent, type ReactElement } from "react";
 import { Link, Navigate } from "react-router";
+import { SolarPanelIcon } from "@phosphor-icons/react";
 import { ApiError } from "../api/client";
+import background from "../assets/background.jpg";
 import { useAuth } from "../auth/useAuth";
 import Button from "../components/Button";
+import ErrorBanner from "../components/ErrorBanner";
 import Field from "../components/Field";
 
 export default function Register(): ReactElement {
@@ -34,56 +37,73 @@ export default function Register(): ReactElement {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-7 py-10 min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-sm flex flex-col gap-6 bg-surface rounded-card shadow-card p-8">
-        <h1 className="font-display text-3xl">Register</h1>
+    <main className="min-h-screen lg:flex">
+      <section className="flex min-h-screen flex-col bg-surface px-7 py-10 sm:px-16 lg:w-lg lg:shrink-0">
+        <div className="flex items-center gap-2 font-display text-xl">
+          <SolarPanelIcon
+            size={32}
+            weight="duotone"
+            className="text-brand"
+            aria-hidden="true"
+          />
+          Solar Sites
+        </div>
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-control bg-danger-soft px-3 py-2 text-sm text-danger"
+        <div className="flex w-full max-w-xs flex-1 flex-col justify-center gap-6 py-10">
+          <h1 className="font-display text-3xl">Create your account</h1>
+
+          {error && <ErrorBanner message={error.message} />}
+
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex flex-col gap-4"
           >
-            {error.message}
+            <Field
+              label="Email"
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={error?.fieldErrors.email}
+            />
+            <Field
+              label="Password"
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={error?.fieldErrors.password}
+            />
+            <Button
+              type="submit"
+              loading={isSubmitting}
+              className="self-start"
+            >
+              Register
+            </Button>
+          </form>
+
+          <p className="text-sm text-text-muted">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-accent hover:text-accent-hover rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              Log in
+            </Link>
           </p>
-        )}
+        </div>
+      </section>
 
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="flex flex-col gap-4"
-        >
-          <Field
-            label="Email"
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={error?.fieldErrors.email}
-          />
-          <Field
-            label="Password"
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={error?.fieldErrors.password}
-          />
-          <Button type="submit" loading={isSubmitting}>
-            Register
-          </Button>
-        </form>
-
-        <p className="text-sm text-text-muted">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-semibold text-accent hover:text-accent-hover rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            Log in
-          </Link>
-        </p>
+      <div className="relative hidden lg:block lg:flex-1">
+        <img
+          src={background}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       </div>
     </main>
   );
