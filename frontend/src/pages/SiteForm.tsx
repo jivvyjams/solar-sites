@@ -103,9 +103,17 @@ export default function SiteForm(): ReactElement {
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
+    const input = toInput(values);
+    if (Number.isNaN(input.roofAreaM2)) {
+      setError(
+        new ApiError(422, "Please check the highlighted fields.", {
+          roofAreaM2: "Enter a number",
+        }),
+      );
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const input = toInput(values);
       const saved =
         id === undefined
           ? await createSite(input)

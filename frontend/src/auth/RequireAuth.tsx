@@ -1,13 +1,14 @@
 import type { ReactElement } from "react";
 import { Navigate, Outlet } from "react-router";
 import NavBar from "../components/NavBar";
+import Spinner from "../components/Spinner";
 import { useAuth } from "./useAuth";
 
-export default function RequireAuth(): ReactElement | null {
+export default function RequireAuth(): ReactElement {
   const { status } = useAuth();
 
   if (status === "loading") {
-    return null;
+    return <Spinner />;
   }
   if (status === "anon") {
     return <Navigate to="/login" replace />;
