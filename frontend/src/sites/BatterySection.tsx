@@ -3,10 +3,10 @@ import { ApiError } from "../api/client";
 import { getBattery } from "../api/sites";
 import type { Battery } from "../api/types";
 import BatteryResult from "./BatteryResult";
-import Button from "./Button";
-import ErrorBanner from "./ErrorBanner";
-import Field from "./Field";
-import Spinner from "./Spinner";
+import Button from "../components/Button";
+import ErrorBanner from "../components/ErrorBanner";
+import Field from "../components/Field";
+import Spinner from "../components/Spinner";
 
 type BatteryState =
   | { status: "idle" }

@@ -8,7 +8,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ApiError } from "../api/client";
 import { createSite, getSite, updateSite } from "../api/sites";
 import type { FoundAddress, Site, SiteInput } from "../api/types";
-import AddressLookup from "../components/AddressLookup";
+import AddressLookup from "../sites/AddressLookup";
 import Button from "../components/Button";
 import { buttonClasses } from "../components/buttonClasses";
 import ErrorBanner from "../components/ErrorBanner";

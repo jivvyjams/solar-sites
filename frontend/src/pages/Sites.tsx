@@ -7,7 +7,7 @@ import { buttonClasses } from "../components/buttonClasses";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
 import PageHeader from "../components/PageHeader";
-import SitesMap from "../components/SitesMap";
+import SitesMap from "../sites/SitesMap";
 import Spinner from "../components/Spinner";
 
 type PageState =
@@ -52,7 +52,7 @@ export default function Sites(): ReactElement {
   } else {
     content = (
       <div className="grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-1">
-        <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card lg:overflow-y-auto">
+        <ul className="divide-y divide-border overflow-hidden rounded-card bg-surface shadow-card lg:max-h-full lg:self-start lg:overflow-y-auto">
           {state.sites.map((site) => (
             <li key={site.id}>
               <Link
