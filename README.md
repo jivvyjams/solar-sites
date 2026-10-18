@@ -204,7 +204,7 @@ CLAUDE.md               working agreement and decision log for the AI assistant
 
 ## AI usage
 
-I used Claude Code throughout this project as a tutor, pair programmer and reviewer. It explained Python, FastAPI, SQL and HTTP sessions to me, proposed code and the reasoning behind it, reviewed my changes against the brief and a security checklist, and ran the test and lint commands. I wrote the code with its help and reviewed every line before committing the code. The working agreement I used with it, including the decision log, is committed as `CLAUDE.md` and `docs/`.
+I used Claude Code throughout this project as a tutor, pair programmer and reviewer as well as to write the README and any other documentation. It explained Python, FastAPI, SQL and HTTP sessions to me, proposed code and the reasoning behind it, reviewed my changes against the brief and a security checklist, and ran the test and lint commands. I wrote the code with its help and reviewed every line before committing the code. The working agreement I used with it, including the decision log, is committed as `CLAUDE.md` and `docs/`.
 
 ## References
 
