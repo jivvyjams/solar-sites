@@ -11,13 +11,8 @@ docker build -t solar .
 docker run -p 8000:8000 solar
 ```
 
-Open http://localhost:8000 and register an account. Nothing is seeded.
-
-The database is a SQLite file inside the container, so a new container starts empty. To keep it between containers: `docker run -p 8000:8000 -v solar-data:/backend/data solar`.
-
 ### In development
 
-Two terminals. Python 3.14 and Node 24.
 
 ```bash
 # terminal 1: backend on :8000, interactive API docs at http://localhost:8000/docs
@@ -129,8 +124,6 @@ The routes and field names are those of the brief's contract. Status codes:
 
 Errors are `{"detail": "..."}` with a message, or for validation a list of `{loc, msg}` entries, one per invalid field, which the frontend shows under that field. A small handler strips the submitted value from that list, so a rejected password is never echoed. Ids are random UUIDs as strings.
 
-The battery response fills the contract's "…" with `gridImportKwh` and `gridExportKwh` beside `selfUsedKwh`, and adds `capacityKwh` and `batteryGainKwh` at the top level.
-
 ## Sessions and security
 
 1. Login checks the password against its Argon2id hash. A wrong email and a wrong password give the same 401.
@@ -139,33 +132,20 @@ The battery response fills the contract's "…" with `gridImportKwh` and `gridEx
 4. The CSRF token travels in the JSON as `csrfToken`, stays in the frontend's memory, and must come back as `X-CSRF-Token` on every POST, PUT and DELETE. The server compares it in constant time, and a missing or wrong header is a 403.
 5. Every request looks the session up, and a row older than seven days counts as no session. Logout deletes the row and clears the cookie.
 
-Why a cookie plus a CSRF token rather than a bearer token: the `HttpOnly` cookie is out of reach of injected scripts, the header stops other sites from riding on the cookie, and a server-side row can be revoked at any time.
-
 - **Passwords:** 8 to 128 characters with a capital, a digit and a symbol. A product choice, since NIST and OWASP favour length over composition rules.
 - **Input:** every value reaches SQLite through a `?` placeholder, and coordinates, capacities, postcode and house number are validated before any upstream call.
-
-## PVGIS
-
-- All calls go through the backend. `PVcalc` gives the yearly and monthly totals, `seriescalc` the 8760 hourly values of 2023 for the battery estimate, both with the same loss and panel-angle settings.
-- Results are cached in memory, so a second view of a site is instant. Timeout 30 s.
-- The production card shows 5341 kWh for The Hague at 5 kWp, PVcalc's average over 2005 to 2023. The battery card shows 5338, the 2023 hourly sum, so that its own numbers add up.
 
 ## Consumption and battery model
 
 PVGIS provides no consumption data, so the household's use is an assumption, as the brief allows. The choice:
 
-**Daily profile.** Consumption follows PVGIS's own [default household profile](https://re.jrc.ec.europa.eu/pvg_download/hourconsumption_norm.csv): 24 hourly shares of a day's use that sum to 1, low at night and highest in the evening. Daily use is the annual use entered by the advisor divided by 365, the same every day. PVGIS hours are UTC and the profile is in local standard time, so profile hour = UTC hour + 1.
-
-Why this profile: it is published by the same source as the production data, so nothing is invented. A flat profile would overstate self-consumption, because it puts as much use at noon as at 8 pm. And the evening peak is exactly when a battery matters. The form's default of 3500 kWh is about the Dutch household average.
-
-**Battery, simulated hour by hour over 2023.**
+**Daily profile.** Consumption follows PVGIS's own [default household profile](https://re.jrc.ec.europa.eu/pvg_download/hourconsumption_norm.csv): 24 hourly shares of a day's use that sum to 1, low at night and highest in the evening. Daily use is the annual use entered by the advisor divided by 365, and the battery is simulated hour by hour over 2023.
 
 - Production covers use: the house uses its share directly, the surplus charges the battery up to its free space, the rest is exported.
 - Use exceeds production: the house uses all the production, the battery delivers the shortfall up to 90 % of its charge, and its charge drops by delivered ÷ 0.9. The rest is imported.
-- Round-trip efficiency 90 %, applied entirely on discharge, as a general assumption from typical published figures for home batteries (see References). The battery starts empty on 1 January, has no reserve, no power limit (a 2.5 kW limit changes the year by about 1 kWh) and no ageing.
-- `batteryGainKwh` is self-used with the battery minus self-used without. For The Hague, 5 kWp, 3500 kWh a year: about 1011 kWh self-used without a battery, 2312 with 5 kWh, 2774 with 10 kWh.
+- Round-trip efficiency 90 %, applied entirely on discharge, as a general assumption from typical published figures for home batteries (see References).
 
-What it ignores, on purpose: differences between households, weekends and seasons in the load shape, summer time, and weather other than 2023's. The profile is a residential one. For a business site a feasibility study would use metered consumption instead.
+What it ignores on purpose: differences between households, weekends and seasons in the load shape, summer time, and weather other than 2023's. The profile is a residential one. For a business site a feasibility study would use metered consumption instead.
 
 ## Beyond the brief
 
@@ -204,7 +184,7 @@ CLAUDE.md               working agreement and decision log for the AI assistant
 
 ## AI usage
 
-I used Claude Code throughout this project as a tutor, pair programmer and reviewer as well as to write the README and any other documentation. It explained Python, FastAPI, SQL and HTTP sessions to me, proposed code and the reasoning behind it, reviewed my changes against the brief and a security checklist, and ran the test and lint commands. I wrote the code with its help and reviewed every line before committing the code. The working agreement I used with it, including the decision log, is committed as `CLAUDE.md` and `docs/`.
+I used Claude Code throughout this project as a tutor, pair programmer and reviewer. It explained Python, FastAPI, SQL and HTTP sessions to me, proposed code and the reasoning behind it, reviewed my changes against the brief and a security checklist, and ran the test and lint commands. I wrote the code with its help and reviewed every line before committing the code. The working agreement I used with it, including the decision log, is committed as `CLAUDE.md` and `docs/`.
 
 ## References
 
