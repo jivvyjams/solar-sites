@@ -12,22 +12,22 @@
 
 **Must (hand-in blockers)**
 
-- [ ] `docker build -t solar .` then `docker run -p 8000:8000 solar` serves the app on http://localhost:8000 from a clean clone.
-- [ ] All eleven contract routes exist with the exact paths, camelCase field names, and the status codes in §3.2.
+- [x] `docker build -t solar .` then `docker run -p 8000:8000 solar` serves the app on http://localhost:8000 from a clean clone.
+- [x] All eleven contract routes exist with the exact paths, camelCase field names, and the status codes in §3.2.
 - [x] Register, login, logout, me work. Passwords hashed with Argon2id. Session cookie is HttpOnly + SameSite=Lax. CSRF header enforced on every POST/PUT/DELETE that has a session.
 - [x] Sites CRUD is scoped to the caller. Another user's site id returns 404.
 - [x] POST/PUT /api/sites return a message per invalid field.
 - [x] Production endpoint maps PVGIS PVcalc. Sea / no data gives a clear 422. Any other PVGIS failure, including a timeout, gives 502.
-- [ ] Battery endpoint runs an hourly simulation with the consumption model documented in the README.
-- [ ] Backend tests cover auth flow, ownership isolation, validation, CSRF, energy maths. `pytest` is green.
-- [ ] README (replacing the Next.js boilerplate): how to run (Docker and dev), stack choices and why, session/CSRF design, consumption model and why, PVGIS handling, known limits, honest AI-usage statement.
+- [x] Battery endpoint runs an hourly simulation with the consumption model documented in the README.
+- [x] Backend tests cover auth flow, ownership isolation, validation, CSRF, energy maths. `pytest` is green.
+- [x] README (replacing the Next.js boilerplate): how to run (Docker and dev), stack choices and why, session/CSRF design, consumption model and why, PVGIS handling, known limits, honest AI-usage statement.
 
 **Should**
 
-- [ ] Monthly bar chart on the site page; battery comparison with "the battery adds X kWh".
-- [ ] `@lru_cache` on the two PVGIS fetch functions.
+- [x] Monthly bar chart on the site page; battery comparison with "the battery adds X kWh".
+- [x] `@lru_cache` on the two PVGIS fetch functions.
 - [x] Session expiry (7 days) enforced.
-- [ ] GitHub Actions: one job running `docker build` on every push (optional, phase 6).
+- [ ] ~GitHub Actions: one job running `docker build` on every push (optional, phase 6).~
 
 **Won't (say so in the README)**
 
@@ -329,7 +329,7 @@ Every phase runs the same loop (tiers: CLAUDE.md §3.1; T = typed by the user, D
 
 - [x] Results move sensibly with capacity (0 equals without; very large plateaus). The Hague, 5 kWp, 3500 kWh: self-used 1011 at 0 kWh, 2312 at 5, 2774 at 10, 2879 at 20, 3344 at 1000.
 - [x] Balance assertions pass.
-- [ ] README section on the model written: moved to phase 6 item 4, where the README is written from scratch (decision 55).
+- [x] README section on the model written: moved to phase 6 item 4, where the README is written from scratch (decision 55).
 
 **Learn first:** time-series simulation and state of charge; floating point rounding; keeping pure functions apart from I/O; FastAPI `Query` validation; nested Pydantic response models.
 **Interview angles:** why PVGIS's household profile and what it ignores (seasons, weekends, summer time, differences between households, battery power limits, degradation); why the profile hour is the UTC hour + 1; where the efficiency loss is applied and why; why capacity 0 needs no special case.
@@ -582,5 +582,5 @@ Stretch 2 (decision 39; built in phase 5b after stretch 1, decision 58; branch `
 - [x] Phase 4 merged
 - [x] Phase 5 merged
 - [x] Phase 5b merged
-- [ ] Phase 6 merged
-- [ ] `v1.0.0` tagged and submitted
+- [x] Phase 6 merged
+- [x] `v1.0.0` tagged and submitted

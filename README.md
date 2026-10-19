@@ -2,22 +2,24 @@
 
 A small web app for energy advisors. An advisor registers, logs in, keeps a list of client sites, and sees for each site the estimated solar production per month and per year from PVGIS, plus how much of that production the client would use themselves with and without a home battery.
 
-## Run it
+![Site detail page, showing yearly production in a monthly chart](docs/screenshot.png)
+
+## Run It
 
 ### With Docker
 
 ```bash
+git clone https://github.com/jivvyjams/solar-sites.git
+cd solar-sites
 docker build -t solar .
 docker run -p 8000:8000 solar
 ```
 
 Open http://localhost:8000 and register an account. Nothing is seeded.
 
-The database is a SQLite file inside the container, so a new container starts empty. To keep it between containers: `docker run -p 8000:8000 -v solar-data:/backend/data solar`.
+### Development Environment
 
-### In development
-
-Two terminals. Python 3.14 and Node 24.
+Two terminals: Python 3.14 and Node 24.
 
 ```bash
 # terminal 1: backend on :8000, interactive API docs at http://localhost:8000/docs
@@ -35,20 +37,21 @@ npm run dev
 Checks:
 
 ```bash
+# each line from the repository root
 cd backend && pytest -q && ruff check . && ruff format --check .
 cd frontend && npm run lint && npm run build
 ```
 
 ## Tech Stack
 
-| Layer       | Choice                                                 | Why                                                                                                                                                          |
-| ----------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Frontend    | Vite, React 19, TypeScript, React Router 7, Tailwind 4 | The whole interface is one page that runs in the browser. It is built once into plain files, and the Python server hands those out, so only one server runs. |
-| Backend     | FastAPI with Pydantic v2                               | Every route declares the shape of the data it expects and returns. FastAPI checks incoming data against that shape and writes the API documentation itself.  |
-| Database    | SQLite through Python's built-in `sqlite3`             | The database is one file on disk, with no separate database server to run. The SQL is written by hand, so every query can be read exactly as it runs.        |
-| HTTP client | httpx                                                  | Makes the calls to PVGIS and PDOK, each with a time limit so a slow upstream cannot hang a request forever.                                                  |
-| Passwords   | argon2-cffi                                            | Stores passwords as Argon2id hashes, the current recommendation. The password itself is never stored.                                                        |
-| Tests       | pytest                                                 | Each test runs against a fresh temporary database and never touches the network.                                                                             |
+| Layer       | Choice                                          | Why                                                                                                                                                          |
+| ----------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend    | Vite, React, TypeScript, React Router, Tailwind | The whole interface is one page that runs in the browser. It is built once into plain files, and the Python server hands those out, so only one server runs. |
+| Backend     | FastAPI with Pydantic v2                        | Every route declares the shape of the data it expects and returns. FastAPI checks incoming data against that shape and writes the API documentation itself.  |
+| Database    | SQLite through Python's built-in `sqlite3`      | The database is one file on disk, with no separate database server to run. The SQL is written by hand, so every query can be read exactly as it runs.        |
+| HTTP client | httpx                                           | Makes the calls to PVGIS and PDOK, each with a time limit so a slow upstream cannot hang a request forever.                                                  |
+| Passwords   | argon2                                          | Stores passwords as Argon2id hashes, the current recommendation. The password itself is never stored.                                                        |
+| Tests       | pytest                                          | Each test runs against a fresh temporary database and never touches the network.                                                                             |
 
 How the pieces fit:
 
@@ -120,18 +123,18 @@ The routes and field names are those of the brief's contract. Status codes:
 | `GET /api/sites/{id}/battery`    | 200, shape below                     | 401, 404, 422 bad query or no data, 502                                                 |
 | `GET /api/address-lookup`        | 200 `{address, latitude, longitude}` | 401, 422 malformed postcode or house number or no address found, 502 lookup unavailable |
 
-### Why these codes
+### Why These Codes
 
 - 404 for another advisor's site, so the answer does not reveal that the id exists
 - 422 for anything well-formed but not acceptable, including a location PVGIS has no data for
 - 403 when the session is valid but the CSRF header is missing
 - 502 for any upstream failure, timeouts included
 
-Errors are `{"detail": "..."}` with a message, or for validation a list of `{loc, msg}` entries, one per invalid field, which the frontend shows under that field. A small handler strips the submitted value from that list, so a rejected password is never echoed. Ids are random UUIDs as strings.
+The battery route takes `capacityKwh` and `annualUseKwh` as query parameters and returns `productionKwh`, `consumptionKwh`, `capacityKwh`, `batteryGainKwh`, and `withoutBattery` and `withBattery`, each `{selfUsedKwh, gridImportKwh, gridExportKwh}`.
 
-The battery response fills the contract's "…" with `gridImportKwh` and `gridExportKwh` beside `selfUsedKwh`, and adds `capacityKwh` and `batteryGainKwh` at the top level.
+Errors are `{"detail": "..."}` with a message, or for validation a list of `{loc, msg}` entries, one per invalid field, which the frontend shows under that field. A small handler strips the submitted value from that list, so a rejected password is never echoed. The ids are random UUIDs as strings.
 
-## Sessions and security
+## Sessions and Security
 
 1. Login checks the password against its Argon2id hash. A wrong email and a wrong password give the same 401.
 2. A random session token and a random CSRF token are stored in a `sessions` row, and every login creates a new one.
@@ -144,44 +147,35 @@ Why a cookie plus a CSRF token rather than a bearer token: the `HttpOnly` cookie
 - **Passwords:** 8 to 128 characters with a capital, a digit and a symbol. A product choice, since NIST and OWASP favour length over composition rules.
 - **Input:** every value reaches SQLite through a `?` placeholder, and coordinates, capacities, postcode and house number are validated before any upstream call.
 
-## PVGIS
-
-- All calls go through the backend. `PVcalc` gives the yearly and monthly totals, `seriescalc` the 8760 hourly values of 2023 for the battery estimate, both with the same loss and panel-angle settings.
-- Results are cached in memory, so a second view of a site is instant. Timeout 30 s.
-- The production card shows 5341 kWh for The Hague at 5 kWp, PVcalc's average over 2005 to 2023. The battery card shows 5338, the 2023 hourly sum, so that its own numbers add up.
-
-## Consumption and battery model
+## Consumption and Battery Model
 
 PVGIS provides no consumption data, so the household's use is an assumption, as the brief allows. The choice:
 
-**Daily profile.** Consumption follows PVGIS's own [default household profile](https://re.jrc.ec.europa.eu/pvg_download/hourconsumption_norm.csv): 24 hourly shares of a day's use that sum to 1, low at night and highest in the evening. Daily use is the annual use entered by the advisor divided by 365, the same every day. PVGIS hours are UTC and the profile is in local standard time, so profile hour = UTC hour + 1.
-
-Why this profile: it is published by the same source as the production data, so nothing is invented. A flat profile would overstate self-consumption, because it puts as much use at noon as at 8 pm. And the evening peak is exactly when a battery matters. The form's default of 3500 kWh is about the Dutch household average.
-
-**Battery, simulated hour by hour over 2023.**
+**Daily profile.** Consumption follows PVGIS's own [default household profile](https://re.jrc.ec.europa.eu/pvg_download/hourconsumption_norm.csv): 24 hourly shares of a day's use that sum to 1, low at night and highest in the evening. Daily use is the annual use entered by the advisor divided by 365, and the battery is simulated hour by hour over 2023, the latest year provided by PVGIS.
 
 - Production covers use: the house uses its share directly, the surplus charges the battery up to its free space, the rest is exported.
-- Use exceeds production: the house uses all the production, the battery delivers the shortfall up to 90 % of its charge, and its charge drops by delivered ÷ 0.9. The rest is imported.
-- Round-trip efficiency 90 %, applied entirely on discharge, as a general assumption from typical published figures for home batteries (see References). The battery starts empty on 1 January, has no reserve, no power limit (a 2.5 kW limit changes the year by about 1 kWh) and no ageing.
-- `batteryGainKwh` is self-used with the battery minus self-used without. For The Hague, 5 kWp, 3500 kWh a year: about 1011 kWh self-used without a battery, 2312 with 5 kWh, 2774 with 10 kWh.
+- Use exceeds production: the house uses all the production, the battery covers the shortfall as far as its charge allows, the rest is imported.
+- Round-trip efficiency 90 %, applied entirely on discharge: 1 kWh out of the battery costs 1.11 kWh of its charge. A general assumption from typical published figures for home batteries (see References).
+- The battery starts empty on 1 January, keeps no reserve, has no power limit (a 2.5 kW limit changes the year by about 1 kWh) and does not age.
 
-What it ignores, on purpose: differences between households, weekends and seasons in the load shape, summer time, and weather other than 2023's. The profile is a residential one. For a business site a feasibility study would use metered consumption instead.
+What it ignores on purpose: differences between households, weekends and seasons in the load shape, summer time, and weather other than 2023. The profile is a residential one. For a business site a feasibility study would use metered consumption instead.
 
-## Beyond the brief
+## Beyond the Brief
 
 - **Address lookup.** Advisors rarely know coordinates. A postcode and house number go to `GET /api/address-lookup`, which asks the Dutch [PDOK Locatieserver](https://www.pdok.nl/introductie/-/article/pdok-locatieserver) from the backend and fills in the address, latitude and longitude, all still editable. No match is a 422, a PDOK failure a 502.
 - **Map.** The sites page shows a pin per site on [OpenStreetMap](https://www.openstreetmap.org/) tiles, drawn with [Leaflet](https://leafletjs.com/).
 
-## Known limits
+## Known Limits
 
 - The app runs as one server process with its database in a single file inside the container. That is right for a demo and wrong for a real deployment, and the data goes with the container unless a volume is mounted.
-- Expired session rows are ignored but never deleted. If a session expires while a page is open, the page shows "Not logged in" until the advisor logs out and in again.
+- PVGIS is only ever called from the backend, and the results are cached in the server's memory for as long as the process runs. A second view of a site is instant, but the cache is lost on restart.
+- Expired session rows are ignored but not deleted. If a session expires while a page is open, the page shows "Not logged in" until the advisor logs out and in again.
 - The backend reads a few known keys from the PVGIS answer. If PVGIS ever answered 200 with a different structure, for example after a format change, reading those keys would fail and the client would get a 500 rather than a clear 502. Checking the shape of the upstream body was left out because the API is versioned (`v5_3` in the URL) and its format is stable.
 
 ## Layout
 
 ```
-Dockerfile              two stages, see "Run it"
+Dockerfile              builds the frontend in a Node stage, then copies it into the Python image
 backend/app/
   main.py               app, routers, the validation-error handler, static serving
   db.py                 schema creation, one connection per request
@@ -189,7 +183,7 @@ backend/app/
   auth.py               hashing, session creation and lookup, CSRF check
   pvgis.py  pdok.py     the two upstream clients
   energy.py             hourly use profile and battery simulation, pure functions
-  routers/              auth, sites, address, health: validate, authorise, call a module, return a schema
+  routers/              the API endpoints to validate, authorise, call a module, and return a schema
 backend/tests/          pytest, a temporary database per test, saved PVGIS responses in fixtures/
 frontend/src/
   api/                  the only files that call fetch, types mirror the contract
@@ -202,9 +196,9 @@ docs/                   brief, plan, stack notes, git workflow, Python primer
 CLAUDE.md               working agreement and decision log for the AI assistant
 ```
 
-## AI usage
+## AI Usage
 
-I used Claude Code throughout this project as a tutor, pair programmer and reviewer as well as to write the README and any other documentation. It explained Python, FastAPI, SQL and HTTP sessions to me, proposed code and the reasoning behind it, reviewed my changes against the brief and a security checklist, and ran the test and lint commands. I wrote the code with its help and reviewed every line before committing the code. The working agreement I used with it, including the decision log, is committed as `CLAUDE.md` and `docs/`.
+I used Claude Code throughout this project as a tutor, pair programmer and reviewer. It explained Python, FastAPI, SQL and HTTP sessions to me, proposed code and the reasoning behind it, reviewed my changes against the brief and a security checklist, and ran the test and lint commands. I wrote the code with its help and reviewed every line before committing the code. The working agreement I used with it, including the decision log, is committed as `CLAUDE.md` and `docs/`.
 
 ## References
 
