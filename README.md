@@ -2,7 +2,10 @@
 
 A small web app for energy advisors. An advisor registers, logs in, keeps a list of client sites, and sees for each site the estimated solar production per month and per year from PVGIS, plus how much of that production the client would use themselves with and without a home battery.
 
-![Site detail page, showing yearly production in a monthly chart](docs/screenshot.png)
+<p align="center">
+  <img src="docs/screenshot-sites.png" alt="Sites page, listing client sites next to a map" width="49%">
+  <img src="docs/screenshot-charts.png" alt="Site detail page, showing yearly production in a monthly chart" width="49%">
+</p>
 
 ## Run It
 
